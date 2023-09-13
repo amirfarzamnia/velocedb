@@ -8,7 +8,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/amirfarzamnia/VeloceDB.svg)](https://github.com/amirfarzamnia/VeloceDB/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/amirfarzamnia/VeloceDB.svg)](https://github.com/amirfarzamnia/VeloceDB/network)
 
-VeloceDB is a lightweight and user-friendly local database designed for Node.js applications. It simplifies data management and persistence by storing data in a human-readable JSON format on your local file system.
+VeloceDB is a lightweight and user-friendly local database designed for Node.js and TypeScript applications. It simplifies data management and persistence by storing data in a human-readable JSON format on your local file system.
 
 ## Features
 
