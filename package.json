@@ -1,0 +1,33 @@
+{
+  "name": "velocedb",
+  "version": "1.0.0",
+  "description": "A High-Performance, Secure, and Robust Local Database",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "npm test",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "build": "npm run lint && npm run format && your-build-script",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amirfarzamnia/VeloceDB.git"
+  },
+  "keywords": [
+    "database",
+    "veloce",
+    "datastore",
+    "datastorage",
+    "nosql",
+    "opensource",
+    "db"
+  ],
+  "author": "Amir Farzamnia",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/amirfarzamnia/VeloceDB/issues"
+  },
+  "homepage": "https://github.com/amirfarzamnia/VeloceDB#readme"
+}
