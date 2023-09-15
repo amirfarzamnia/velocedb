@@ -8,4 +8,4 @@ declare module 'velocedb' {
         constructor(filename: string, config?: veloceConfig);
         save(): void;
     }
-  }
+}
