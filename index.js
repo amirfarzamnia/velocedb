@@ -10,18 +10,10 @@ module.exports = class veloce {
             ...config
         };
 
-        try {
-            this.data = JSON.parse(fs.readFileSync(this.filename, this.config.encoding));
-        } catch (error) {
-            if (error.code !== 'ENOENT') throw error;
-        }
+        this.data = JSON.parse(fs.readFileSync(this.filename, this.config.encoding));
     }
 
     save() {
-        try {
-            fs.writeFileSync(this.filename, JSON.stringify(this.data, null, this.config.space), this.config.encoding);
-        } catch (error) {
-            throw error;
-        }
+        fs.writeFileSync(this.filename, JSON.stringify(this.data, null, this.config.space), this.config.encoding);
     }
 };
