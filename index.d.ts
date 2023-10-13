@@ -1,11 +1,11 @@
 declare module 'velocedb' {
-    interface veloceConfig {
+    interface VeloceConfig {
         encoding?: string;
         space?: number;
     }
 
-    export default class veloce {
-        constructor(filename: string, config?: veloceConfig);
+    export default class Veloce {
+        constructor(filename: string, config?: VeloceConfig);
         save(): void;
     }
 }
