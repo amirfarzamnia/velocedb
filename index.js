@@ -2,6 +2,8 @@ const fs = require('fs');
 
 module.exports = class Veloce {
     constructor(filename, config = {}) {
+        !fs.existsSync(filename) && fs.writeFileSync(filename, '{}');
+
         this.filename = filename;
         this.config = Object.assign({ encoding: 'utf-8', space: 2 }, config);
         this.data = JSON.parse(fs.readFileSync(filename, this.config.encoding));
