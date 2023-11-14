@@ -16,7 +16,7 @@ VeloceDB is a lightweight, fast, and user-friendly local database designed for N
 - **Easy to use**: VeloceDB offers a straightforward API for managing data.
 - **Customization**: Easily configure database settings, such as encoding and JSON formatting, to fit your requirements.
 - **Security**: VeloceDB prioritizes data security to safeguard your information during access and storage.
-= **Lightweight**: VeloceDB is a lightweight and lightning-fast database. It has been optimized to deliver maximum speed and efficiency.
+- **Lightweight**: VeloceDB is a lightweight and lightning-fast database. It has been optimized to deliver maximum speed and efficiency.
 
 ## Installation
 
