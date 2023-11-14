@@ -1,7 +1,7 @@
 {
   "name": "velocedb",
-  "version": "1.2.5",
-  "description": "A High-Performance, Secure, and Robust Local Database",
+  "version": "1.4.0",
+  "description": "A high-performance, secure, and robust local database",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -17,12 +17,13 @@
     "datastorage",
     "nosql",
     "opensource",
-    "db"
+    "db",
+    "json"
   ],
   "author": "Amir Farzamnia",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/amirfarzamnia/VeloceDB/issues"
+    "url": "https://github.com/absyro/VeloceDB/issues"
   },
-  "homepage": "https://github.com/amirfarzamnia/VeloceDB#readme"
+  "homepage": "https://github.com/absyro/VeloceDB#readme"
 }

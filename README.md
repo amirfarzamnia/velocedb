@@ -1,25 +1,26 @@
 # VeloceDB
 
-**A High-Performance, Secure, and Robust Local Database**
+**A high-performance, secure, and robust local database**
 
-[![npm version](https://badge.fury.io/js/velocedb.svg)](https://badge.fury.io/js/velocedb)
+[![npm version](https://badge.fury.io/js/velocedb.svg)](https://www.npmjs.com/package/velocedb)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub issues](https://img.shields.io/github/issues/amirfarzamnia/VeloceDB.svg)](https://github.com/amirfarzamnia/VeloceDB/issues)
-[![GitHub stars](https://img.shields.io/github/stars/amirfarzamnia/VeloceDB.svg)](https://github.com/amirfarzamnia/VeloceDB/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/amirfarzamnia/VeloceDB.svg)](https://github.com/amirfarzamnia/VeloceDB/network)
+[![GitHub issues](https://img.shields.io/github/issues/absyro/VeloceDB.svg)](https://github.com/absyro/VeloceDB/issues)
+[![GitHub stars](https://img.shields.io/github/stars/absyro/VeloceDB.svg)](https://github.com/absyro/VeloceDB/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/absyro/VeloceDB.svg)](https://github.com/absyro/VeloceDB/forks)
 
-VeloceDB is a lightweight and user-friendly local database designed for Node.js and TypeScript applications. It simplifies data management and persistence by storing data in a human-readable JSON format on your local file system.
+VeloceDB is a lightweight, fast, and user-friendly local database designed for Node.js and TypeScript applications. It simplifies data management and persistence by storing data in a human-readable JSON format on your local file system.
 
 ## Features
 
-- **Easy to Use**: VeloceDB offers a straightforward API for managing data.
-- **JSON Storage**: Data is stored in JSON format, making it human-readable and easy to work with.
-- **Custom Configuration**: Easily configure database settings such as encoding and JSON formatting to fit your requirements.
+- **Open source**: VeloceDB is open source, which means you have the freedom to modify it according to your preferences.
+- **Easy to use**: VeloceDB offers a straightforward API for managing data.
+- **Customization**: Easily configure database settings, such as encoding and JSON formatting, to fit your requirements.
 - **Security**: VeloceDB prioritizes data security to safeguard your information during access and storage.
+= **Lightweight**: VeloceDB is a lightweight and lightning-fast database. It has been optimized to deliver maximum speed and efficiency.
 
 ## Installation
 
-You can install VeloceDB via npm:
+You can install VeloceDB via NPM:
 
 ```bash
 npm install velocedb
@@ -31,37 +32,38 @@ npm install velocedb
 const veloce = require('velocedb');
 const database = new veloce('database.json');
 
-// Set data
+// Set your data
 database.data = {
-    string: 'Hello World',
+    string: 'String',
     boolean: true
 };
 
-// Modify data
+// Modify your data
 database.data.boolean = false;
 
-// Save data to the database file
+// Save your data in the database.json file
 database.save();
 
-// Retrieve and check data
+// Retrieve and check your data
 console.log(database.data);
 ```
 
 ## Configuration
 
-You can customize the database by providing an options object when creating an instance. Here are the available configuration options:
+You can customize the database by providing an options object when creating it. Here are the available configuration options:
 
-- **encoding**: The encoding used for reading/writing the database file (default: 'utf-8').
-- **space**: The number of spaces for JSON formatting (default: 2).
+- **encoding**: The encoding option is used for reading or writing the database file (default: 'utf-8')
+- **space**: The number of spaces for JSON formatting (default: 2)
 
 ### Example
 
 ```javascript
+const veloce = require('velocedb');
 const database = new veloce('database.json', {
     space: 4
 });
 ```
 
-## Who Uses This Database?
+## Who uses VeloceDB?
 
 VeloceDB serves as the default database for [Absyro Company](https://absyro.com) and its services, including [Bot Studio](https://botstudioo.com).

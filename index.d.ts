@@ -6,6 +6,7 @@ declare module 'velocedb' {
 
     export default class Veloce {
         constructor(filename: string, config?: VeloceConfig);
+
         save(): void;
     }
 }
