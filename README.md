@@ -12,8 +12,8 @@ VeloceDB is a lightweight, fast, and user-friendly local database designed for N
 
 ## Features
 
-- **Open source**: VeloceDB is open source, which means you have the freedom to modify it according to your preferences.
-- **Easy to use**: VeloceDB offers a straightforward API for managing data.
+- **Open Source**: VeloceDB is open source, which means you have the freedom to modify it according to your preferences.
+- **Easy to Use**: VeloceDB offers a straightforward API for managing data.
 - **Customization**: Easily configure database settings, such as encoding and JSON formatting, to fit your requirements.
 - **Security**: VeloceDB prioritizes data security to safeguard your information during access and storage.
 - **Lightweight**: VeloceDB is a lightweight and lightning-fast database. It has been optimized to deliver maximum speed and efficiency.
@@ -29,8 +29,8 @@ npm install velocedb
 ## Usage
 
 ```javascript
-const veloce = require('velocedb');
-const database = new veloce('database.json');
+const Veloce = require('velocedb');
+const database = new Veloce('database.json');
 
 // Set your data
 database.data = {
@@ -58,8 +58,8 @@ You can customize the database by providing an options object when creating it. 
 ### Example
 
 ```javascript
-const veloce = require('velocedb');
-const database = new veloce('database.json', {
+const Veloce = require('velocedb');
+const database = new Veloce('database.json', {
     space: 4
 });
 ```

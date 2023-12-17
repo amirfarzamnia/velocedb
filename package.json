@@ -1,6 +1,6 @@
 {
   "name": "velocedb",
-  "version": "1.4.0",
+  "version": "1.4.5",
   "description": "A high-performance, secure, and robust local database",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,7 @@
   "author": "Amir Farzamnia",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/absyro/VeloceDB/issues"
+    "url": "https://github.com/absyro/velocedb/issues"
   },
-  "homepage": "https://github.com/absyro/VeloceDB#readme"
+  "homepage": "https://github.com/absyro/velocedb#readme"
 }
