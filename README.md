@@ -63,7 +63,3 @@ const database = new Veloce('database.json', {
     space: 4
 });
 ```
-
-## Who uses VeloceDB?
-
-VeloceDB serves as the default database for [Absyro Company](https://absyro.com) and its services, including [Bot Studio](https://botstudioo.com).
