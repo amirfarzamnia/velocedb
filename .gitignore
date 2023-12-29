@@ -1,0 +1,10 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# IDE-specific files
+.vscode/
