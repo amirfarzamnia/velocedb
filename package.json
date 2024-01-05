@@ -1,14 +1,11 @@
 {
   "name": "velocedb",
-  "version": "1.5.2",
+  "version": "1.5.5",
   "description": "A high-performance, secure, and robust local database",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "npm test",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "dev": "nodemon index.js"
+    "start": "node .",
+    "test": "npm test"
   },
   "keywords": [
     "database",
