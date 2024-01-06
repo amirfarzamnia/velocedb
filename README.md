@@ -1,26 +1,26 @@
-# VeloceDB
+# velocedb
 
 **A high-performance, secure, and robust local database**
 
 [![npm version](https://badge.fury.io/js/velocedb.svg)](https://www.npmjs.com/package/velocedb)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub issues](https://img.shields.io/github/issues/absyro/VeloceDB.svg)](https://github.com/absyro/VeloceDB/issues)
-[![GitHub stars](https://img.shields.io/github/stars/absyro/VeloceDB.svg)](https://github.com/absyro/VeloceDB/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/absyro/VeloceDB.svg)](https://github.com/absyro/VeloceDB/forks)
+[![GitHub issues](https://img.shields.io/github/issues/absyro/velocedb.svg)](https://github.com/absyro/velocedb/issues)
+[![GitHub stars](https://img.shields.io/github/stars/absyro/velocedb.svg)](https://github.com/absyro/velocedb/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/absyro/velocedb.svg)](https://github.com/absyro/velocedb/forks)
 
-VeloceDB is a lightweight, fast, and user-friendly local database designed for Node.js and TypeScript applications. It simplifies data management and persistence by storing data in a human-readable JSON format on your local file system.
+velocedb is a lightweight, fast, and user-friendly local database designed for Node.js and TypeScript applications. It simplifies data management and persistence by storing data in a human-readable JSON format on your local file system.
 
 ## Features
 
-- **Open Source**: VeloceDB is open source, which means you have the freedom to modify it according to your preferences.
-- **Easy to Use**: VeloceDB offers a straightforward API for managing data.
+- **Open Source**: velocedb is open source, which means you have the freedom to modify it according to your preferences.
+- **Easy to Use**: velocedb offers a straightforward API for managing data.
 - **Customization**: Easily configure database settings, such as encoding and JSON formatting, to fit your requirements.
-- **Security**: VeloceDB prioritizes data security to safeguard your information during access and storage.
-- **Lightweight**: VeloceDB is a lightweight and lightning-fast database. It has been optimized to deliver maximum speed and efficiency.
+- **Security**: velocedb prioritizes data security to safeguard your information during access and storage.
+- **Lightweight**: velocedb is a lightweight and lightning-fast database. It has been optimized to deliver maximum speed and efficiency.
 
 ## Installation
 
-You can install VeloceDB via NPM:
+You can install velocedb via NPM:
 
 ```bash
 npm install velocedb
