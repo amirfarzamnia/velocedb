@@ -44,6 +44,9 @@ database.data.boolean = false;
 // Save your data in the database.json file
 database.save();
 
+// Delete your database.json file
+database.delete();
+
 // Retrieve and check your data
 console.log(database.data);
 ```
