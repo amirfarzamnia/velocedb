@@ -4,9 +4,9 @@
 
 [![npm version](https://badge.fury.io/js/velocedb.svg)](https://www.npmjs.com/package/velocedb)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub issues](https://img.shields.io/github/issues/absyro/velocedb.svg)](https://github.com/absyro/velocedb/issues)
-[![GitHub stars](https://img.shields.io/github/stars/absyro/velocedb.svg)](https://github.com/absyro/velocedb/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/absyro/velocedb.svg)](https://github.com/absyro/velocedb/forks)
+[![GitHub issues](https://img.shields.io/github/issues/amirfarzamnia/velocedb.svg)](https://github.com/amirfarzamnia/velocedb/issues)
+[![GitHub stars](https://img.shields.io/github/stars/amirfarzamnia/velocedb.svg)](https://github.com/amirfarzamnia/velocedb/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/amirfarzamnia/velocedb.svg)](https://github.com/amirfarzamnia/velocedb/forks)
 
 velocedb is a lightweight, fast, and user-friendly local database designed for Node.js and TypeScript applications. It simplifies data management and persistence by storing data in a human-readable JSON format on your local file system.
 
