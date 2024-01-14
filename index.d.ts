@@ -6,5 +6,7 @@ declare module 'velocedb' {
         });
 
         save(): void;
+
+        delete(): void;
     }
 }
