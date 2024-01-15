@@ -64,6 +64,8 @@ You can customize the database by providing an options object when creating it. 
 
 ```javascript
 const Veloce = require('velocedb');
+
+// Creating a database with custom configuration
 const database = new Veloce('database.json', {
     space: 4
 });
