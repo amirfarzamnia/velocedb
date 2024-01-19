@@ -1,8 +1,9 @@
 {
   "name": "velocedb",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "A high-performance, secure, and robust local database",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "start": "node .",
     "test": "npm test"
