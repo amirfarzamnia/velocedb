@@ -1,4 +1,4 @@
-# velocedb
+# Velocedb
 
 **A high-performance, secure, and robust local database**
 
@@ -8,19 +8,19 @@
 [![GitHub stars](https://img.shields.io/github/stars/amirfarzamnia/velocedb.svg)](https://github.com/amirfarzamnia/velocedb/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/amirfarzamnia/velocedb.svg)](https://github.com/amirfarzamnia/velocedb/forks)
 
-velocedb is a lightweight, fast, and user-friendly local database designed for Node.js and TypeScript applications. It simplifies data management and persistence by storing data in a human-readable JSON format on your local file system.
+Velocedb is a lightweight, fast, and user-friendly local database designed for Node.js and TypeScript applications. It simplifies data management and persistence by storing data in a human-readable JSON format on your local file system.
 
 ## Features
 
-- **Open Source**: velocedb is open source, which means you have the freedom to modify it according to your preferences.
-- **Easy to Use**: velocedb offers a straightforward API for managing data.
+- **Open Source**: Velocedb is open source, which means you have the freedom to modify it according to your preferences.
+- **Easy to Use**: Velocedb offers a straightforward API for managing data.
 - **Customization**: Easily configure database settings, such as encoding and JSON formatting, to fit your requirements.
-- **Security**: velocedb prioritizes data security to safeguard your information during access and storage.
-- **Lightweight**: velocedb is a lightweight and lightning-fast database. It has been optimized to deliver maximum speed and efficiency.
+- **Security**: Velocedb prioritizes data security to safeguard your information during access and storage.
+- **Lightweight**: Velocedb is a lightweight and lightning-fast database. It has been optimized to deliver maximum speed and efficiency.
 
 ## Installation
 
-You can install velocedb via NPM:
+You can install Velocedb via NPM:
 
 ```bash
 npm install velocedb
@@ -57,8 +57,8 @@ console.log(database.data);
 
 You can customize the database by providing an options object when creating it. Here are the available configuration options:
 
-- **encoding**: The encoding option is used for reading or writing the database file (default: 'utf-8')
-- **space**: The number of spaces for JSON formatting (default: 2)
+- **encoding**: The encoding option is used for reading or writing the database file (default: 'utf-8').
+- **space**: The number of spaces for JSON formatting (default: 2).
 
 ### Example
 

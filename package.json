@@ -1,13 +1,9 @@
 {
   "name": "velocedb",
-  "version": "1.7.5",
+  "version": "1.8.5",
   "description": "A high-performance, secure, and robust local database",
   "main": "index.js",
   "types": "index.d.ts",
-  "scripts": {
-    "start": "node .",
-    "test": "npm test"
-  },
   "keywords": [
     "database",
     "veloce",
@@ -23,9 +19,9 @@
   "bugs": {
     "url": "https://github.com/amirfarzamnia/velocedb/issues"
   },
+  "homepage": "https://github.com/amirfarzamnia/velocedb#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/amirfarzamnia/velocedb.git"
-  },
-  "homepage": "https://github.com/amirfarzamnia/velocedb#readme"
+  }
 }
