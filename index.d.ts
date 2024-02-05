@@ -7,7 +7,7 @@ interface VeloceConfig {
 }
 
 /**
- * The `Velocedb` package allows you to create local JSON databases.
+ * The `velocedb` package allows you to create local JSON databases.
  * To get started, import the necessary modules:
  *
  * ```js
