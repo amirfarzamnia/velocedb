@@ -36,7 +36,7 @@ const database = new Veloce('databases/database.json');
 
 // Set your data
 database.data = {
-    string: 'String',
+    string: 'string',
     boolean: true
 };
 

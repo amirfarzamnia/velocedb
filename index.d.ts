@@ -30,6 +30,9 @@ declare module 'velocedb' {
     export default class Veloce {
         constructor(filename: string, config?: VeloceConfig);
 
+        /** The content stored in the database, which can encompass all data types that support JSON formatting. */
+        data: any;
+
         /** Saves the current state of the database to the specified file. */
         save(): void;
 
