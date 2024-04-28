@@ -1,12 +1,12 @@
-const fs = require('node:fs');
 const path = require('node:path');
+const fs = require('node:fs');
 
 module.exports = class Veloce {
     constructor(filename, config = {}) {
-        const directory = path.dirname(filename);
+        const dir = path.dirname(filename);
 
-        fs.existsSync(directory) || fs.mkdirSync(directory, { recursive: true });
-        fs.existsSync(filename) || fs.writeFileSync(filename, '{}');
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        if (!fs.existsSync(filename)) fs.writeFileSync(filename, '{}');
 
         this.filename = filename;
         this.config = Object.assign({ encoding: 'utf-8', space: 2 }, config);

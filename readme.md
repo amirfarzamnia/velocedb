@@ -31,25 +31,25 @@ npm install velocedb
 ```javascript
 const Veloce = require('velocedb');
 
-// Creating a new database located in the databases folder and called database.json
+// Creating a new database located in the databases folder and called database.json.
 const database = new Veloce('databases/database.json');
 
-// Set your data
+// Set your data.
 database.data = {
     string: 'string',
     boolean: true
 };
 
-// Modify your data
+// Modify your data.
 database.data.boolean = false;
 
-// Save your data in the database.json file
+// Save your data in the database.json file.
 database.save();
 
-// Delete your database.json file
+// Delete your database.json file.
 database.delete();
 
-// Retrieve and check your data
+// Retrieve and check your data.
 console.log(database.data);
 ```
 
@@ -65,7 +65,7 @@ You can customize the database by providing an options object when creating it. 
 ```javascript
 const Veloce = require('velocedb');
 
-// Creating a database with custom configuration
+// Creating a database with custom configuration.
 const database = new Veloce('database.json', {
     space: 4
 });

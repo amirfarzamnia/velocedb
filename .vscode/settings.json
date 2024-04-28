@@ -1,6 +1,3 @@
 {
-  "files.trimTrailingWhitespace": true,
-  "gitlens.currentLine.enabled": false,
-  "gitlens.codeLens.authors.enabled": false,
-  "gitlens.codeLens.recentChange.enabled": false
+  "files.trimTrailingWhitespace": true
 }
