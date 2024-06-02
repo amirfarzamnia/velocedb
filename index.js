@@ -1,7 +1,7 @@
-const path = require('node:path');
-const fs = require('node:fs');
+import path from 'node:path';
+import fs from 'node:fs';
 
-module.exports = class Veloce {
+export default class Veloce {
     constructor(filename, config = {}) {
         const dir = path.dirname(filename);
 
@@ -20,4 +20,4 @@ module.exports = class Veloce {
     delete() {
         fs.unlinkSync(this.filename);
     }
-};
+}

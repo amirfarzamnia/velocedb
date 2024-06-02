@@ -2,5 +2,19 @@
   "gitlens.currentLine.enabled": false,
   "gitlens.codeLens.authors.enabled": false,
   "gitlens.codeLens.recentChange.enabled": false,
-  "files.trimTrailingWhitespace": true
+  "files.trimTrailingWhitespace": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.printWidth": 140,
+  "[javascript]": {
+    "prettier.tabWidth": 4,
+    "prettier.singleQuote": true
+  },
+  "[typescript]": {
+    "prettier.tabWidth": 4,
+    "prettier.singleQuote": true
+  },
+  "[markdown]": {
+    "prettier.singleQuote": true
+  }
 }

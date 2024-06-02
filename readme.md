@@ -36,8 +36,8 @@ const database = new Veloce('databases/database.json');
 
 // Set your data.
 database.data = {
-    string: 'string',
-    boolean: true
+  string: 'string',
+  boolean: true,
 };
 
 // Modify your data.
@@ -67,6 +67,6 @@ const Veloce = require('velocedb');
 
 // Creating a database with custom configuration.
 const database = new Veloce('database.json', {
-    space: 4
+  space: 4,
 });
 ```
