@@ -11,7 +11,7 @@ interface VeloceConfig {
  * To get started, import the necessary modules:
  *
  * ```js
- * const Veloce = require('velocedb');
+ * import Veloce from 'velocedb';
  * ```
  *
  * For a detailed understanding of its functionality, refer to the package's GitHub page:
