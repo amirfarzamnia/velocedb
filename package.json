@@ -1,6 +1,6 @@
 {
   "name": "velocedb",
-  "version": "2.2.4",
+  "version": "2.2.8",
   "description": "A high-performance, secure, and robust local database",
   "main": "index.js",
   "types": "index.d.ts",
