@@ -15,11 +15,15 @@ export default class Veloce {
 
         this.config.autosave = true;
 
+        this.config.onchange = config.onchange;
+
         this.config.handler = {
             get: (obj, prop, receiver) => {
                 if (this.config.debug) console.log('Getting property', prop);
 
                 const result = Reflect.get(obj, prop, receiver);
+
+                this.config.onchange?.('get', result);
 
                 return result;
             },
@@ -27,6 +31,8 @@ export default class Veloce {
                 if (this.config.debug) console.log('Property', prop, 'has been set to', value);
 
                 const result = Reflect.set(obj, prop, value, receiver);
+
+                this.config.onchange?.('set', result);
 
                 if (this.config.autosave) this.save();
 
@@ -37,12 +43,16 @@ export default class Veloce {
 
                 const result = Reflect.has(obj, prop);
 
+                this.config.onchange?.('has', result);
+
                 return result;
             },
             deleteProperty: (obj, prop) => {
                 if (this.config.debug) console.log('Deleted', prop, 'property');
 
                 const result = Reflect.deleteProperty(obj, prop);
+
+                this.config.onchange?.('deleteProperty', result);
 
                 if (this.config.autosave) this.save();
 
@@ -53,6 +63,8 @@ export default class Veloce {
 
                 const result = Reflect.ownKeys(obj);
 
+                this.config.onchange?.('ownKeys', result);
+
                 return result;
             },
             getOwnPropertyDescriptor: (obj, prop) => {
@@ -60,12 +72,16 @@ export default class Veloce {
 
                 const result = Reflect.getOwnPropertyDescriptor(obj, prop);
 
+                this.config.onchange?.('getOwnPropertyDescriptor', result);
+
                 return result;
             },
             defineProperty: (obj, prop, descriptor) => {
                 if (this.config.debug) console.log('Defining property', prop);
 
                 const result = Reflect.defineProperty(obj, prop, descriptor);
+
+                this.config.onchange?.('defineProperty', result);
 
                 if (this.config.autosave) this.save();
 
@@ -76,12 +92,16 @@ export default class Veloce {
 
                 const result = Reflect.preventExtensions(obj);
 
+                this.config.onchange?.('preventExtensions', result);
+
                 return result;
             },
             isExtensible: (obj) => {
                 if (this.config.debug) console.log('Checking if object is extensible');
 
                 const result = Reflect.isExtensible(obj);
+
+                this.config.onchange?.('isExtensible', result);
 
                 return result;
             },
@@ -90,12 +110,16 @@ export default class Veloce {
 
                 const result = Reflect.getPrototypeOf(obj);
 
+                this.config.onchange?.('getPrototypeOf', result);
+
                 return result;
             },
             setPrototypeOf: (obj, proto) => {
                 if (this.config.debug) console.log('Setting prototype of object');
 
                 const result = Reflect.setPrototypeOf(obj, proto);
+
+                this.config.onchange?.('setPrototypeOf', result);
 
                 if (this.config.autosave) this.save();
 
@@ -106,6 +130,8 @@ export default class Veloce {
 
                 const result = Reflect.apply(target, thisArg, argumentsList);
 
+                this.config.onchange?.('apply', result);
+
                 if (this.config.autosave) this.save();
 
                 return result;
@@ -114,6 +140,8 @@ export default class Veloce {
                 if (this.config.debug) console.log('Constructing instance');
 
                 const result = Reflect.construct(target, argumentsList, newTarget);
+
+                this.config.onchange?.('construct', result);
 
                 if (this.config.autosave) this.save();
 
