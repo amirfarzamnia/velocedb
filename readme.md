@@ -79,7 +79,7 @@ No Proxy Mode is optimized for performance and direct data manipulation. It bypa
 ```javascript
 import Veloce from 'velocedb';
 
-const database = new Veloce('tests/i.json', { noProxy: true });
+const database = new Veloce('database.json', { noProxy: true });
 
 database.data = { string: 'Hello World!' };
 
