@@ -168,6 +168,8 @@ export default class Veloce {
         if (!this.initialCheckIsDone) {
             if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
+            if (this.debug) console.log('The initial check is done');
+
             this.initialCheckIsDone = true;
         }
 
