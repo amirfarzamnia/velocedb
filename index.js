@@ -17,7 +17,7 @@ export default class Veloce {
 
         this.config.encoding = 'utf-8';
 
-        this.config.onchange = config.onchange;
+        this.config.onupdate = config.onupdate;
 
         this.config.handler = {
             get: (obj, prop, receiver) => {
@@ -25,7 +25,7 @@ export default class Veloce {
 
                 const result = Reflect.get(obj, prop, receiver);
 
-                this.config.onchange?.('get', result);
+                this.config.onupdate?.('get', result);
 
                 return result;
             },
@@ -34,7 +34,7 @@ export default class Veloce {
 
                 const result = Reflect.set(obj, prop, value, receiver);
 
-                this.config.onchange?.('set', result);
+                this.config.onupdate?.('set', result);
 
                 if (this.config.autosave) this.save();
 
@@ -45,7 +45,7 @@ export default class Veloce {
 
                 const result = Reflect.has(obj, prop);
 
-                this.config.onchange?.('has', result);
+                this.config.onupdate?.('has', result);
 
                 return result;
             },
@@ -54,7 +54,7 @@ export default class Veloce {
 
                 const result = Reflect.deleteProperty(obj, prop);
 
-                this.config.onchange?.('deleteProperty', result);
+                this.config.onupdate?.('deleteProperty', result);
 
                 if (this.config.autosave) this.save();
 
@@ -65,7 +65,7 @@ export default class Veloce {
 
                 const result = Reflect.ownKeys(obj);
 
-                this.config.onchange?.('ownKeys', result);
+                this.config.onupdate?.('ownKeys', result);
 
                 return result;
             },
@@ -74,7 +74,7 @@ export default class Veloce {
 
                 const result = Reflect.getOwnPropertyDescriptor(obj, prop);
 
-                this.config.onchange?.('getOwnPropertyDescriptor', result);
+                this.config.onupdate?.('getOwnPropertyDescriptor', result);
 
                 return result;
             },
@@ -83,7 +83,7 @@ export default class Veloce {
 
                 const result = Reflect.defineProperty(obj, prop, descriptor);
 
-                this.config.onchange?.('defineProperty', result);
+                this.config.onupdate?.('defineProperty', result);
 
                 if (this.config.autosave) this.save();
 
@@ -94,7 +94,7 @@ export default class Veloce {
 
                 const result = Reflect.preventExtensions(obj);
 
-                this.config.onchange?.('preventExtensions', result);
+                this.config.onupdate?.('preventExtensions', result);
 
                 return result;
             },
@@ -103,7 +103,7 @@ export default class Veloce {
 
                 const result = Reflect.isExtensible(obj);
 
-                this.config.onchange?.('isExtensible', result);
+                this.config.onupdate?.('isExtensible', result);
 
                 return result;
             },
@@ -112,7 +112,7 @@ export default class Veloce {
 
                 const result = Reflect.getPrototypeOf(obj);
 
-                this.config.onchange?.('getPrototypeOf', result);
+                this.config.onupdate?.('getPrototypeOf', result);
 
                 return result;
             },
@@ -121,7 +121,7 @@ export default class Veloce {
 
                 const result = Reflect.setPrototypeOf(obj, proto);
 
-                this.config.onchange?.('setPrototypeOf', result);
+                this.config.onupdate?.('setPrototypeOf', result);
 
                 if (this.config.autosave) this.save();
 
@@ -132,7 +132,7 @@ export default class Veloce {
 
                 const result = Reflect.apply(target, thisArg, argumentsList);
 
-                this.config.onchange?.('apply', result);
+                this.config.onupdate?.('apply', result);
 
                 if (this.config.autosave) this.save();
 
@@ -143,7 +143,7 @@ export default class Veloce {
 
                 const result = Reflect.construct(target, argumentsList, newTarget);
 
-                this.config.onchange?.('construct', result);
+                this.config.onupdate?.('construct', result);
 
                 if (this.config.autosave) this.save();
 
