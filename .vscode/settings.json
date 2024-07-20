@@ -17,5 +17,6 @@
   "[markdown]": {
     "prettier.singleQuote": true,
     "prettier.trailingComma": "none"
-  }
+  },
+  "prettier.trailingComma": "none"
 }
