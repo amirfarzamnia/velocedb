@@ -161,7 +161,11 @@ export default class Veloce {
 
         const dir = path.dirname(this.filename);
 
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        if (!this.initialCheckIsDone) {
+            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+            this.initialCheckIsDone = true;
+        }
 
         this.saving = true;
 
