@@ -7,13 +7,15 @@ export default class Veloce {
 
         this.config = {};
 
-        this.config.encoding = 'utf-8';
-
         this.config.space = 2;
 
         this.config.debug = false;
 
         this.config.autosave = true;
+
+        this.config.noProxy = false;
+
+        this.config.encoding = 'utf-8';
 
         this.config.onchange = config.onchange;
 
@@ -153,7 +155,9 @@ export default class Veloce {
 
         Object.assign(this.config, config);
 
-        this.data = new Proxy(this.config.target, this.config.handler);
+        this.data = this.config.noProxy ? this.config.target : new Proxy(this.config.target, this.config.handler);
+
+        if (this.debug) console.log('The database has been constructed');
     }
 
     save() {
@@ -171,10 +175,14 @@ export default class Veloce {
 
         fs.writeFileSync(this.filename, JSON.stringify(this.data, null, this.config.space), { encoding: this.config.encoding });
 
+        if (this.debug) console.log('The data has been saved');
+
         delete this.saving;
     }
 
     delete() {
         fs.unlinkSync(this.filename);
+
+        if (this.debug) console.log('The database has been deleted');
     }
 }
