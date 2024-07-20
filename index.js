@@ -28,6 +28,8 @@ export default class Veloce {
 
                 const result = Reflect.set(obj, prop, value, receiver);
 
+                if (this.config.autosave) this.save();
+
                 return result;
             },
             has: (obj, prop) => {
@@ -41,6 +43,8 @@ export default class Veloce {
                 if (this.config.debug) console.log('Deleted', prop, 'property');
 
                 const result = Reflect.deleteProperty(obj, prop);
+
+                if (this.config.autosave) this.save();
 
                 return result;
             },
@@ -62,6 +66,8 @@ export default class Veloce {
                 if (this.config.debug) console.log('Defining property', prop);
 
                 const result = Reflect.defineProperty(obj, prop, descriptor);
+
+                if (this.config.autosave) this.save();
 
                 return result;
             },
@@ -91,6 +97,8 @@ export default class Veloce {
 
                 const result = Reflect.setPrototypeOf(obj, proto);
 
+                if (this.config.autosave) this.save();
+
                 return result;
             },
             apply: (target, thisArg, argumentsList) => {
@@ -98,12 +106,16 @@ export default class Veloce {
 
                 const result = Reflect.apply(target, thisArg, argumentsList);
 
+                if (this.config.autosave) this.save();
+
                 return result;
             },
             construct: (target, argumentsList, newTarget) => {
                 if (this.config.debug) console.log('Constructing instance');
 
                 const result = Reflect.construct(target, argumentsList, newTarget);
+
+                if (this.config.autosave) this.save();
 
                 return result;
             }
