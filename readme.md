@@ -1,6 +1,6 @@
 # Velocedb
 
-**A high-performance, secure, and robust local database for Node.js**
+**A high-performance, secure, and robust local database**
 
 [![npm version](https://badge.fury.io/js/velocedb.svg)](https://www.npmjs.com/package/velocedb)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
