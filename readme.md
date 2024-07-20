@@ -1,6 +1,6 @@
 # Velocedb
 
-**A high-performance, secure, and robust local database**
+**A high-performance, secure, and robust local database for Node.js**
 
 [![npm version](https://badge.fury.io/js/velocedb.svg)](https://www.npmjs.com/package/velocedb)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -8,19 +8,19 @@
 [![GitHub stars](https://img.shields.io/github/stars/amirfarzamnia/velocedb.svg)](https://github.com/amirfarzamnia/velocedb/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/amirfarzamnia/velocedb.svg)](https://github.com/amirfarzamnia/velocedb/forks)
 
-Velocedb is a lightweight, fast, and user-friendly local database designed for Node.js and TypeScript applications. It simplifies data management and persistence by storing data in a human-readable JSON format on your local file system.
+VeloceDB is a highly secure, fast, and efficient local database designed for Node.js applications. It supports all data types and offers a flexible and easy-to-use interface. VeloceDB operates with a single class that integrates all its features, making it both powerful and straightforward.
 
 ## Features
 
-- **Open Source**: Velocedb is open source, which means you have the freedom to modify it according to your preferences.
-- **Easy to Use**: Velocedb offers a straightforward API for managing data.
-- **Customization**: Easily configure database settings, such as encoding and JSON formatting, to fit your requirements.
-- **Security**: Velocedb prioritizes data security to safeguard your information during access and storage.
-- **Lightweight**: Velocedb is a lightweight and lightning-fast database. It has been optimized to deliver maximum speed and efficiency.
+- **High Performance**: Fast data access and modifications.
+- **Security**: Built with robust security measures.
+- **Flexibility**: Supports all data types and complex data structures.
+- **Ease of Use**: Simple API, no need for complex functions to interact with data.
+- **Debugging**: Advanced debugging features for better data management.
 
 ## Installation
 
-You can install Velocedb via NPM:
+To install VeloceDB via npm, use the following command:
 
 ```bash
 npm install velocedb
@@ -28,45 +28,74 @@ npm install velocedb
 
 ## Usage
 
+Here’s a basic example of how to use VeloceDB:
+
 ```javascript
 import Veloce from 'velocedb';
 
-// Creating a new database located in the databases folder and called database.json.
-const database = new Veloce('databases/database.json');
+const database = new Veloce('database.json');
 
-// Set your data.
-database.data = {
-  string: 'string',
-  boolean: true
-};
+database.data.number = 8;
+```
 
-// Modify your data.
-database.data.boolean = false;
+This example creates a `database.json` file and sets a `number` property to 8. The data is automatically saved to the file. You can also modify and manage your data as follows:
 
-// Save your data in the database.json file.
+```javascript
+import Veloce from 'velocedb';
+
+const database = new Veloce('database.json');
+
+database.data.number = 8;
+database.data.string = 'Hello World!';
+database.data.boolean = true;
+
+delete database.data.boolean;
+```
+
+All changes are automatically saved, making data management seamless and effortless.
+
+## Modes of Operation
+
+### Proxy Mode
+
+In Proxy Mode, VeloceDB provides advanced features such as auto-save, detailed debug logs, and update tracking. This mode is recommended for most use cases as it offers comprehensive functionality and optimization for complex tasks.
+
+**Example:**
+
+```javascript
+import Veloce from 'velocedb';
+
+const database = new Veloce('database.json');
+
+database.data.string = 'Hello World!';
+```
+
+### No Proxy Mode
+
+No Proxy Mode is optimized for performance and direct data manipulation. It bypasses the use of proxies for a more straightforward process. However, features like auto-updates and update handlers are not available in this mode. You need to manually save the database.
+
+**Example:**
+
+```javascript
+import Veloce from 'velocedb';
+
+const database = new Veloce('tests/i.json', { noProxy: true });
+
+database.data = { string: 'Hello World!' };
+
 database.save();
-
-// Delete your database.json file.
-database.delete();
-
-// Retrieve and check your data.
-console.log(database.data);
 ```
 
 ## Configuration
 
-You can customize the database by providing an options object when creating it. Here are the available configuration options:
+VeloceDB offers various configuration options. For a comprehensive list, refer to the TypeScript documentation available [here](./index.d.ts).
 
-- **encoding**: The encoding option is used for reading or writing the database file (default: 'utf-8').
-- **space**: The number of spaces for JSON formatting (default: 2).
+## Who Uses VeloceDB
 
-### Example
+VeloceDB is ideal for projects requiring an efficient, secure, and easy-to-use local database. It is especially suitable for Node.js projects needing optimized data storage and access. Originally developed for [Bot Studio](https://www.botstudioo.com), VeloceDB is well-suited for handling extensive data in a streamlined manner.
 
-```javascript
-import Veloce from 'velocedb';
+## License
 
-// Creating a database with custom configuration.
-const database = new Veloce('database.json', {
-  space: 4
-});
-```
+VeloceDB is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+
+For more information and to contribute, visit the [GitHub repository](https://github.com/amirfarzamnia/velocedb).
