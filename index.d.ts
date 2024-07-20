@@ -8,10 +8,10 @@ interface VeloceConfig {
     autosave?: boolean;
     /** Should the database use no proxy mode? The no-proxy mode disables many features and creates a straightforward process for the databases. This mode is more optimized, but you need to save the data manually. Default is false. */
     noProxy?: boolean;
-    /** The encoding format for the database. Default is utf-8. */
-    encoding?: string;
     /** The `onupdate` function is only used in proxy mode. Whenever a new update is received for the data, this function will be triggered with the update method and result. By default, this function is undefined. */
     onupdate?: (method: string, result: any) => void;
+    /** The options that will be used for the `node:fs` module when saving the data to the database. */
+    fileOptions?: object | { encoding: 'utf-8' };
     /** This object is used in proxy mode. In JavaScript, proxies require a handler to work. This object is the handler used for data proxies. Modifying this object is not suggested. */
     handler?: object;
     /** This is the data that will be put into the database during the database construction process. If the database exists, the data will be the database's data; otherwise, the data will be an empty object. */

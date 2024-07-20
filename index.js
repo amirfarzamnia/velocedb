@@ -15,9 +15,9 @@ export default class Veloce {
 
         this.config.noProxy = false;
 
-        this.config.encoding = 'utf-8';
-
         this.config.onupdate = config.onupdate;
+
+        this.config.fileOptions = { encoding: 'utf-8' };
 
         this.config.handler = {
             get: (obj, prop, receiver) => {
@@ -151,7 +151,7 @@ export default class Veloce {
             }
         };
 
-        this.config.target = fs.existsSync(filename) ? JSON.parse(fs.readFileSync(filename, this.config.encoding)) : {};
+        this.config.target = fs.existsSync(filename) ? JSON.parse(fs.readFileSync(filename)) : {};
 
         Object.assign(this.config, config);
 
@@ -175,7 +175,7 @@ export default class Veloce {
 
         this.saving = true;
 
-        fs.writeFileSync(this.filename, JSON.stringify(this.data, null, this.config.space), { encoding: this.config.encoding });
+        fs.writeFileSync(this.filename, JSON.stringify(this.data, null, this.config.space), this.config.fileOptions);
 
         if (this.debug) console.log('The data has been saved');
 
