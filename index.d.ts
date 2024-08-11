@@ -1,7 +1,7 @@
 /** Configuration options for the Veloce database. */
 interface VeloceConfig {
     /** The number of spaces for indentation when saving the file as a local file. Default is 2. */
-    space?: number;
+    space?: number | null;
     /** Should the database run in debug mode? In debug mode, it will create logs of all processes and changes. Default is false. */
     debug?: boolean;
     /** Should data be automatically saved to the database? This feature only works in proxy mode. Default is true. */
