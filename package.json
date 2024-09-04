@@ -5,6 +5,9 @@
   "main": "index.js",
   "types": "index.d.ts",
   "type": "module",
+  "scripts": {
+    "development": "nodemon tests/index.js"
+  },
   "keywords": [
     "database",
     "veloce",
