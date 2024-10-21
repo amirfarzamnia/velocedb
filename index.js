@@ -15,11 +15,11 @@ export default class Veloce {
 
         this.config.debug = false;
 
-        this.config.autosave = true;
+        this.config.autoSave = true;
 
         this.config.noProxy = false;
 
-        this.config.onupdate = config.onupdate;
+        this.config.onUpdate = config.onUpdate;
 
         this.config.fileOptions = { encoding: 'utf-8' };
 
@@ -29,7 +29,7 @@ export default class Veloce {
 
                 const result = Reflect.get(obj, prop, receiver);
 
-                this.config.onupdate?.('get', result);
+                this.config.onUpdate?.('get', result);
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -40,9 +40,9 @@ export default class Veloce {
 
                 const result = Reflect.set(obj, prop, value, receiver);
 
-                this.config.onupdate?.('set', result);
+                this.config.onUpdate?.('set', result);
 
-                if (this.config.autosave) this.save();
+                if (this.config.autoSave) this.save();
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -53,7 +53,7 @@ export default class Veloce {
 
                 const result = Reflect.has(obj, prop);
 
-                this.config.onupdate?.('has', result);
+                this.config.onUpdate?.('has', result);
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -64,9 +64,9 @@ export default class Veloce {
 
                 const result = Reflect.deleteProperty(obj, prop);
 
-                this.config.onupdate?.('deleteProperty', result);
+                this.config.onUpdate?.('deleteProperty', result);
 
-                if (this.config.autosave) this.save();
+                if (this.config.autoSave) this.save();
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -77,7 +77,7 @@ export default class Veloce {
 
                 const result = Reflect.ownKeys(obj);
 
-                this.config.onupdate?.('ownKeys', result);
+                this.config.onUpdate?.('ownKeys', result);
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -88,7 +88,7 @@ export default class Veloce {
 
                 const result = Reflect.getOwnPropertyDescriptor(obj, prop);
 
-                this.config.onupdate?.('getOwnPropertyDescriptor', result);
+                this.config.onUpdate?.('getOwnPropertyDescriptor', result);
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -99,9 +99,9 @@ export default class Veloce {
 
                 const result = Reflect.defineProperty(obj, prop, descriptor);
 
-                this.config.onupdate?.('defineProperty', result);
+                this.config.onUpdate?.('defineProperty', result);
 
-                if (this.config.autosave) this.save();
+                if (this.config.autoSave) this.save();
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -112,7 +112,7 @@ export default class Veloce {
 
                 const result = Reflect.preventExtensions(obj);
 
-                this.config.onupdate?.('preventExtensions', result);
+                this.config.onUpdate?.('preventExtensions', result);
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -123,7 +123,7 @@ export default class Veloce {
 
                 const result = Reflect.isExtensible(obj);
 
-                this.config.onupdate?.('isExtensible', result);
+                this.config.onUpdate?.('isExtensible', result);
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -134,7 +134,7 @@ export default class Veloce {
 
                 const result = Reflect.getPrototypeOf(obj);
 
-                this.config.onupdate?.('getPrototypeOf', result);
+                this.config.onUpdate?.('getPrototypeOf', result);
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -145,9 +145,9 @@ export default class Veloce {
 
                 const result = Reflect.setPrototypeOf(obj, proto);
 
-                this.config.onupdate?.('setPrototypeOf', result);
+                this.config.onUpdate?.('setPrototypeOf', result);
 
-                if (this.config.autosave) this.save();
+                if (this.config.autoSave) this.save();
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -158,9 +158,9 @@ export default class Veloce {
 
                 const result = Reflect.apply(target, thisArg, argumentsList);
 
-                this.config.onupdate?.('apply', result);
+                this.config.onUpdate?.('apply', result);
 
-                if (this.config.autosave) this.save();
+                if (this.config.autoSave) this.save();
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
@@ -171,9 +171,9 @@ export default class Veloce {
 
                 const result = Reflect.construct(target, argumentsList, newTarget);
 
-                this.config.onupdate?.('construct', result);
+                this.config.onUpdate?.('construct', result);
 
-                if (this.config.autosave) this.save();
+                if (this.config.autoSave) this.save();
 
                 if (typeof result === 'object' && result !== null) return Veloce.createNestedProxies(result, this.config.handler);
 
