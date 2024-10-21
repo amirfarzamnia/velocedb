@@ -187,7 +187,7 @@ export default class Veloce {
 
         this.data = this.config.noProxy ? this.config.target : Veloce.createNestedProxies(this.config.target, this.config.handler);
 
-        if (this.debug) console.log('The database has been constructed.');
+        if (this.config.debug) console.log('The database has been constructed.');
     }
 
     save() {
@@ -198,7 +198,7 @@ export default class Veloce {
         if (!this.initialCheckIsDone) {
             if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-            if (this.debug) console.log('The initial check is done.');
+            if (this.config.debug) console.log('The initial check is done.');
 
             this.initialCheckIsDone = true;
         }
@@ -207,7 +207,7 @@ export default class Veloce {
 
         fs.writeFileSync(this.filename, JSON.stringify(this.data, null, this.config.space), this.config.fileOptions);
 
-        if (this.debug) console.log('The data has been saved.');
+        if (this.config.debug) console.log('The data has been saved.');
 
         delete this.saving;
     }
@@ -215,6 +215,6 @@ export default class Veloce {
     delete() {
         fs.unlinkSync(this.filename);
 
-        if (this.debug) console.log('The database has been deleted.');
+        if (this.config.debug) console.log('The database has been deleted.');
     }
 }
