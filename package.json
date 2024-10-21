@@ -29,6 +29,6 @@
     "url": "git+https://github.com/amirfarzamnia/velocedb.git"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.7"
   }
 }
