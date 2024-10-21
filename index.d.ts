@@ -12,8 +12,17 @@ interface VeloceConfig {
     /** Should the database use no proxy mode? The no-proxy mode disables many features and creates a straightforward process for the databases. This mode is more optimized, but you need to save the data manually. Default is false. */
     noProxy?: boolean;
 
+    /** When automatically saving the database data, the database will wait for the given duration in milliseconds before saving the data. If the database is modified again, it will wait again until there are no more changes, then save the data. The default value is set to 750 milliseconds (750). */
+    autoSaveTimeoutMs?: number;
+
+    /** The timeout in milliseconds before retrying to save the data if any issues occur. Default is 100 milliseconds (100). */
+    savingRetryTimeout?: number;
+
     /** The `onUpdate` function is only used in proxy mode. Whenever a new update is received for the data, this function will be triggered with the update method and result. By default, this function is undefined. */
     onUpdate?: (method: string, result: any) => void;
+
+    /** The database will create timeouts before saving the data (only in auto-save mode). This number indicates maximum timeouts before saving database data. Default is 10. */
+    maximumAutoSaveTimeouts?: number;
 
     /** The options that will be used for the `node:fs` module when saving the data to the database. */
     fileOptions?: object | { encoding: 'utf-8' };
@@ -52,8 +61,13 @@ declare module 'velocedb' {
         /** The database data. In proxy mode, changes to the data will result in some additional processes. In no-proxy mode, the data is just normal JavaScript data. */
         data: any;
 
-        /** Saves the current state of the database to the specified file. */
-        save(): void;
+        /**
+         * Saves the current state of the database to the specified file.
+         *
+         * @param force - Should it force the save process?
+         */
+
+        save(force?: boolean): void;
 
         /** Deletes the database file. */
         delete(): void;

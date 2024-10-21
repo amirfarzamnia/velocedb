@@ -19,7 +19,13 @@ export default class Veloce {
 
         this.config.noProxy = false;
 
+        this.config.autoSaveTimeoutMs = 750;
+
+        this.config.savingRetryTimeout = 100;
+
         this.config.onUpdate = config.onUpdate;
+
+        this.config.maximumAutoSaveTimeouts = 10;
 
         this.config.fileOptions = { encoding: 'utf-8' };
 
@@ -190,26 +196,48 @@ export default class Veloce {
         if (this.config.debug) console.log('The database has been constructed.');
     }
 
-    save() {
-        if (this.saving) return;
+    save(force) {
+        const save = () => {
+            const dir = path.dirname(this.filename);
 
-        const dir = path.dirname(this.filename);
+            if (!this.initialCheckIsDone) {
+                if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-        if (!this.initialCheckIsDone) {
-            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+                if (this.config.debug) console.log('The initial check is done.');
 
-            if (this.config.debug) console.log('The initial check is done.');
+                this.initialCheckIsDone = true;
+            }
 
-            this.initialCheckIsDone = true;
+            this.saving = true;
+
+            fs.writeFileSync(this.filename, JSON.stringify(this.data, null, this.config.space), this.config.fileOptions);
+
+            if (this.config.debug) console.log('The data has been saved.');
+
+            delete this.saving;
+
+            delete this.saveTimeout;
+
+            delete this.saveTimeoutsCount;
+        };
+
+        if (force) return save();
+
+        if (this.saving) return setTimeout(save, this.config.savingRetryTimeout);
+
+        if (!this.config.autoSave) return save();
+
+        if (this.saveTimeout) {
+            clearTimeout(this.saveTimeout);
+
+            this.saveTimeoutsCount ||= 0;
+
+            this.saveTimeoutsCount++;
+
+            if (this.saveTimeoutsCount >= this.config.maximumAutoSaveTimeouts) return save();
         }
 
-        this.saving = true;
-
-        fs.writeFileSync(this.filename, JSON.stringify(this.data, null, this.config.space), this.config.fileOptions);
-
-        if (this.config.debug) console.log('The data has been saved.');
-
-        delete this.saving;
+        this.saveTimeout = setTimeout(save, this.config.autoSaveTimeoutMs);
     }
 
     delete() {
