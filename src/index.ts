@@ -1,5 +1,5 @@
 import path from "node:path";
-import fs, { WriteFileOptions } from "node:fs";
+import fs from "node:fs";
 import sjson from "secure-json-parse";
 import stringify from "json-stringify-safe";
 
@@ -12,10 +12,10 @@ import stringify from "json-stringify-safe";
  */
 export class Veloce<TData = unknown> {
   /** The file path where the database will be stored */
-  private readonly filePath: string;
+  private readonly _filePath: string;
 
   /** Configuration options for the database */
-  private readonly configuration: {
+  private readonly _configuration: {
     /**
      * The number of spaces for indentation when saving the file.
      * @default 2
@@ -69,7 +69,7 @@ export class Veloce<TData = unknown> {
      * File system options used when saving data to the database file.
      * @default { encoding: "utf-8" }
      */
-    fileOptions?: WriteFileOptions;
+    fileOptions?: fs.WriteFileOptions;
 
     /**
      * Whether to use synchronous file operations by default.
@@ -83,21 +83,22 @@ export class Veloce<TData = unknown> {
   public data: TData;
 
   /** Flag to track if the initial directory check has been performed */
-  private isInitialCheckComplete = false;
+  private _isInitialCheckComplete = false;
 
   /** Flag to indicate if a save operation is in progress */
-  private isSaving = false;
+  private _isSaving = false;
 
   /** Reference to the auto-save timeout */
-  private saveTimeout?: NodeJS.Timeout;
+  private _saveTimeout?: NodeJS.Timeout;
 
   /** Counter for tracking consecutive auto-save timeout operations */
-  private saveTimeoutCount = 0;
+  private _saveTimeoutCount = 0;
 
   /**
    * Creates nested proxies for objects within the database structure
    * to track changes at all levels of the object hierarchy.
    *
+   * @private
    * @param target - The target object to proxy
    * @param handler - The proxy handler containing trap methods
    * @returns A proxied version of the target object
@@ -109,9 +110,16 @@ export class Veloce<TData = unknown> {
     return new Proxy(target, handler);
   }
 
+  /**
+   * Triggers an automatic save operation based on configuration settings.
+   * If auto-save is enabled, it will use either synchronous or asynchronous
+   * save methods depending on the configuration.
+   *
+   * @private
+   */
   private _triggerAutoSave(): void {
-    if (this.configuration.autoSave) {
-      if (this.configuration.synchronous) {
+    if (this._configuration.autoSave) {
+      if (this._configuration.synchronous) {
         this.save();
       } else {
         void this.saveAsync();
@@ -127,11 +135,11 @@ export class Veloce<TData = unknown> {
    */
   constructor(
     filePath: string,
-    configuration: Partial<Veloce<TData>["configuration"]> = {}
+    configuration: Partial<Veloce<TData>["_configuration"]> = {}
   ) {
-    this.filePath = filePath;
+    this._filePath = filePath;
 
-    this.configuration = {
+    this._configuration = {
       indentation: 2,
       autoSave: true,
       noProxy: false,
@@ -144,7 +152,7 @@ export class Veloce<TData = unknown> {
       ...configuration,
     };
 
-    this.data = this.initializeData();
+    this.data = this._initializeData();
   }
 
   /**
@@ -152,16 +160,16 @@ export class Veloce<TData = unknown> {
    *
    * @returns The initialized data
    */
-  private initializeData(): TData {
-    const fileExists = fs.existsSync(this.filePath);
+  private _initializeData(): TData {
+    const fileExists = fs.existsSync(this._filePath);
 
     const initialData = fileExists
-      ? sjson.parse(fs.readFileSync(this.filePath, { encoding: "utf-8" }))
+      ? sjson.parse(fs.readFileSync(this._filePath, { encoding: "utf-8" }))
       : {};
 
-    return this.configuration.noProxy
+    return this._configuration.noProxy
       ? initialData
-      : Veloce._createNestedProxies(initialData, this.createProxyHandler());
+      : Veloce._createNestedProxies(initialData, this._createProxyHandler());
   }
 
   /**
@@ -169,15 +177,15 @@ export class Veloce<TData = unknown> {
    *
    * @returns A proxy handler object with trap methods
    */
-  private createProxyHandler(): ProxyHandler<any> {
+  private _createProxyHandler(): ProxyHandler<any> {
     return {
       get: (target: any, property: string | symbol, receiver: any): any => {
         const result = Reflect.get(target, property, receiver);
 
-        this.configuration.onUpdate?.("get", result);
+        this._configuration.onUpdate?.("get", result);
 
         return result instanceof Object
-          ? Veloce._createNestedProxies(result, this.createProxyHandler())
+          ? Veloce._createNestedProxies(result, this._createProxyHandler())
           : result;
       },
 
@@ -189,7 +197,7 @@ export class Veloce<TData = unknown> {
       ): boolean => {
         const result = Reflect.set(target, property, value, receiver);
 
-        this.configuration.onUpdate?.("set", result);
+        this._configuration.onUpdate?.("set", result);
 
         this._triggerAutoSave();
 
@@ -199,7 +207,7 @@ export class Veloce<TData = unknown> {
       deleteProperty: (target: any, property: string | symbol): boolean => {
         const result = Reflect.deleteProperty(target, property);
 
-        this.configuration.onUpdate?.("deleteProperty", result);
+        this._configuration.onUpdate?.("deleteProperty", result);
 
         this._triggerAutoSave();
 
@@ -213,7 +221,7 @@ export class Veloce<TData = unknown> {
       ): boolean => {
         const result = Reflect.defineProperty(target, property, descriptor);
 
-        this.configuration.onUpdate?.("defineProperty", result);
+        this._configuration.onUpdate?.("defineProperty", result);
 
         this._triggerAutoSave();
 
@@ -223,7 +231,7 @@ export class Veloce<TData = unknown> {
       setPrototypeOf: (target: any, prototype: object | null): boolean => {
         const result = Reflect.setPrototypeOf(target, prototype);
 
-        this.configuration.onUpdate?.("setPrototypeOf", result);
+        this._configuration.onUpdate?.("setPrototypeOf", result);
 
         this._triggerAutoSave();
 
@@ -233,7 +241,7 @@ export class Veloce<TData = unknown> {
       apply: (target: any, thisArg: any, argumentsList: any[]): any => {
         const result = Reflect.apply(target, thisArg, argumentsList);
 
-        this.configuration.onUpdate?.("apply", result);
+        this._configuration.onUpdate?.("apply", result);
 
         this._triggerAutoSave();
 
@@ -247,19 +255,19 @@ export class Veloce<TData = unknown> {
       ): object => {
         const result = Reflect.construct(target, argumentsList, newTarget);
 
-        this.configuration.onUpdate?.("construct", result);
+        this._configuration.onUpdate?.("construct", result);
 
         this._triggerAutoSave();
 
         return result instanceof Object
-          ? Veloce._createNestedProxies(result, this.createProxyHandler())
+          ? Veloce._createNestedProxies(result, this._createProxyHandler())
           : result;
       },
 
       has: (obj: any, prop: string | symbol): boolean => {
         const result = Reflect.has(obj, prop);
 
-        this.configuration.onUpdate?.("has", result);
+        this._configuration.onUpdate?.("has", result);
 
         return result;
       },
@@ -267,7 +275,7 @@ export class Veloce<TData = unknown> {
       ownKeys: (obj: any): ArrayLike<string | symbol> => {
         const result = Reflect.ownKeys(obj);
 
-        this.configuration.onUpdate?.("ownKeys", result);
+        this._configuration.onUpdate?.("ownKeys", result);
 
         return result;
       },
@@ -278,7 +286,7 @@ export class Veloce<TData = unknown> {
       ): PropertyDescriptor | undefined => {
         const result = Reflect.getOwnPropertyDescriptor(obj, prop);
 
-        this.configuration.onUpdate?.("getOwnPropertyDescriptor", result);
+        this._configuration.onUpdate?.("getOwnPropertyDescriptor", result);
 
         return result;
       },
@@ -286,7 +294,7 @@ export class Veloce<TData = unknown> {
       preventExtensions: (obj: any): boolean => {
         const result = Reflect.preventExtensions(obj);
 
-        this.configuration.onUpdate?.("preventExtensions", result);
+        this._configuration.onUpdate?.("preventExtensions", result);
 
         return result;
       },
@@ -294,7 +302,7 @@ export class Veloce<TData = unknown> {
       isExtensible: (obj: any): boolean => {
         const result = Reflect.isExtensible(obj);
 
-        this.configuration.onUpdate?.("isExtensible", result);
+        this._configuration.onUpdate?.("isExtensible", result);
 
         return result;
       },
@@ -302,7 +310,7 @@ export class Veloce<TData = unknown> {
       getPrototypeOf: (obj: any): object | null => {
         const result = Reflect.getPrototypeOf(obj);
 
-        this.configuration.onUpdate?.("getPrototypeOf", result);
+        this._configuration.onUpdate?.("getPrototypeOf", result);
 
         return result;
       },
@@ -315,25 +323,25 @@ export class Veloce<TData = unknown> {
    */
   save(force = false): void {
     const performSave = (): void => {
-      const dir = path.dirname(this.filePath);
+      const dir = path.dirname(this._filePath);
 
-      if (!this.isInitialCheckComplete) {
+      if (!this._isInitialCheckComplete) {
         if (!fs.existsSync(dir)) {
           fs.mkdirSync(dir, { recursive: true });
         }
 
-        this.isInitialCheckComplete = true;
+        this._isInitialCheckComplete = true;
       }
 
-      this.isSaving = true;
+      this._isSaving = true;
 
       fs.writeFileSync(
-        this.filePath,
-        stringify(this.data, null, this.configuration.indentation),
-        this.configuration.fileOptions
+        this._filePath,
+        stringify(this.data, null, this._configuration.indentation),
+        this._configuration.fileOptions
       );
 
-      this.cleanupSaveState();
+      this._cleanupSaveState();
     };
 
     this.handleSaveOperation(performSave, force);
@@ -345,27 +353,27 @@ export class Veloce<TData = unknown> {
    */
   async saveAsync(force = false): Promise<void> {
     const performSave = async (): Promise<void> => {
-      const dir = path.dirname(this.filePath);
+      const dir = path.dirname(this._filePath);
 
-      if (!this.isInitialCheckComplete) {
+      if (!this._isInitialCheckComplete) {
         try {
           await fs.promises.access(dir);
         } catch {
           await fs.promises.mkdir(dir, { recursive: true });
         }
 
-        this.isInitialCheckComplete = true;
+        this._isInitialCheckComplete = true;
       }
 
-      this.isSaving = true;
+      this._isSaving = true;
 
       await fs.promises.writeFile(
-        this.filePath,
-        stringify(this.data, null, this.configuration.indentation),
-        this.configuration.fileOptions
+        this._filePath,
+        stringify(this.data, null, this._configuration.indentation),
+        this._configuration.fileOptions
       );
 
-      this.cleanupSaveState();
+      this._cleanupSaveState();
     };
 
     this.handleSaveOperation(performSave, force);
@@ -375,63 +383,63 @@ export class Veloce<TData = unknown> {
    * Handles the save operation with proper timing and retry logic.
    */
   private handleSaveOperation(
-    saveFn: () => void | Promise<void>,
+    saveFunction: () => void | Promise<void>,
     force: boolean
   ): void {
     if (force) {
-      void saveFn();
+      void saveFunction();
 
       return;
     }
 
-    if (this.isSaving) {
+    if (this._isSaving) {
       setTimeout(
-        () => this.handleSaveOperation(saveFn, force),
-        this.configuration.saveRetryTimeoutMs
+        () => this.handleSaveOperation(saveFunction, force),
+        this._configuration.saveRetryTimeoutMs
       );
 
       return;
     }
 
-    if (!this.configuration.autoSave) {
-      void saveFn();
+    if (!this._configuration.autoSave) {
+      void saveFunction();
 
       return;
     }
 
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
+    if (this._saveTimeout) {
+      clearTimeout(this._saveTimeout);
 
-      this.saveTimeoutCount++;
+      this._saveTimeoutCount++;
 
       if (
-        this.saveTimeoutCount >= (this.configuration.maxAutoSaveTimeouts ?? 0)
+        this._saveTimeoutCount >= (this._configuration.maxAutoSaveTimeouts ?? 0)
       ) {
-        void saveFn();
+        void saveFunction();
 
         return;
       }
     }
 
-    this.saveTimeout = setTimeout(
-      () => void saveFn(),
-      this.configuration.autoSaveDelayMs
+    this._saveTimeout = setTimeout(
+      () => void saveFunction(),
+      this._configuration.autoSaveDelayMs
     );
   }
 
   /**
    * Cleans up the save state after a save operation.
    */
-  private cleanupSaveState(): void {
-    this.isSaving = false;
+  private _cleanupSaveState(): void {
+    this._isSaving = false;
 
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
+    if (this._saveTimeout) {
+      clearTimeout(this._saveTimeout);
     }
 
-    this.saveTimeout = undefined;
+    this._saveTimeout = undefined;
 
-    this.saveTimeoutCount = 0;
+    this._saveTimeoutCount = 0;
   }
 
   /**
@@ -439,7 +447,7 @@ export class Veloce<TData = unknown> {
    * This operation cannot be undone.
    */
   delete(): void {
-    fs.unlinkSync(this.filePath);
+    fs.unlinkSync(this._filePath);
   }
 
   /**
@@ -447,21 +455,21 @@ export class Veloce<TData = unknown> {
    * This operation cannot be undone.
    */
   async deleteAsync(): Promise<void> {
-    await fs.promises.unlink(this.filePath);
+    await fs.promises.unlink(this._filePath);
   }
 
   /**
    * Reloads the data from the file synchronously.
    */
   reload(): void {
-    if (fs.existsSync(this.filePath)) {
+    if (fs.existsSync(this._filePath)) {
       const newData = sjson.parse(
-        fs.readFileSync(this.filePath, { encoding: "utf-8" })
+        fs.readFileSync(this._filePath, { encoding: "utf-8" })
       );
 
-      this.data = this.configuration.noProxy
+      this.data = this._configuration.noProxy
         ? newData
-        : Veloce._createNestedProxies(newData, this.createProxyHandler());
+        : Veloce._createNestedProxies(newData, this._createProxyHandler());
     }
   }
 
@@ -469,16 +477,16 @@ export class Veloce<TData = unknown> {
    * Reloads the data from the file asynchronously.
    */
   async reloadAsync(): Promise<void> {
-    await fs.promises.access(this.filePath);
+    await fs.promises.access(this._filePath);
 
-    const content = await fs.promises.readFile(this.filePath, {
+    const content = await fs.promises.readFile(this._filePath, {
       encoding: "utf-8",
     });
 
     const newData = sjson.parse(content);
 
-    this.data = this.configuration.noProxy
+    this.data = this._configuration.noProxy
       ? newData
-      : Veloce._createNestedProxies(newData, this.createProxyHandler());
+      : Veloce._createNestedProxies(newData, this._createProxyHandler());
   }
 }
