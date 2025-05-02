@@ -112,7 +112,7 @@ export default class Veloce<TData = unknown> {
    */
   private static createNestedProxies<T extends object>(
     target: T,
-    handler: ProxyHandler<T>,
+    handler: ProxyHandler<T>
   ): T {
     return new Proxy(target, handler);
   }
@@ -158,20 +158,17 @@ export default class Veloce<TData = unknown> {
 
       const initialData = fileExists
         ? sjson.parse(fs.readFileSync(this.filePath, { encoding: "utf-8" }))
-        : ({} as TData);
+        : {};
 
       return this.config.noProxy
         ? initialData
-        : (Veloce.createNestedProxies(
-            initialData as object,
-            this.createProxyHandler(),
-          ) as TData);
+        : Veloce.createNestedProxies(initialData, this.createProxyHandler());
     } catch (error) {
       if (this.config.throwErrors) {
         throw error;
       }
 
-      return {} as TData;
+      return {};
     }
   }
 
@@ -196,7 +193,7 @@ export default class Veloce<TData = unknown> {
         target: any,
         property: string | symbol,
         value: any,
-        receiver: any,
+        receiver: any
       ): boolean => {
         const result = Reflect.set(target, property, value, receiver);
 
@@ -232,7 +229,7 @@ export default class Veloce<TData = unknown> {
       defineProperty: (
         target: any,
         property: string | symbol,
-        descriptor: PropertyDescriptor,
+        descriptor: PropertyDescriptor
       ): boolean => {
         const result = Reflect.defineProperty(target, property, descriptor);
 
@@ -284,7 +281,7 @@ export default class Veloce<TData = unknown> {
       construct: (
         target: any,
         argumentsList: any[],
-        newTarget: any,
+        newTarget: any
       ): object => {
         const result = Reflect.construct(target, argumentsList, newTarget);
 
@@ -300,7 +297,7 @@ export default class Veloce<TData = unknown> {
 
         return isObject(result)
           ? Veloce.createNestedProxies(result, this.createProxyHandler())
-          : (result as object);
+          : result;
       },
 
       // Simple proxy traps that don't trigger saves
@@ -322,7 +319,7 @@ export default class Veloce<TData = unknown> {
 
       getOwnPropertyDescriptor: (
         obj: any,
-        prop: string | symbol,
+        prop: string | symbol
       ): PropertyDescriptor | undefined => {
         const result = Reflect.getOwnPropertyDescriptor(obj, prop);
 
@@ -379,7 +376,7 @@ export default class Veloce<TData = unknown> {
         fs.writeFileSync(
           this.filePath,
           stringify(this.data, null, this.config.indentation),
-          this.config.fileOptions,
+          this.config.fileOptions
         );
       } catch (error) {
         if (this.config.throwErrors) {
@@ -417,7 +414,7 @@ export default class Veloce<TData = unknown> {
         await fs.promises.writeFile(
           this.filePath,
           stringify(this.data, null, this.config.indentation),
-          this.config.fileOptions,
+          this.config.fileOptions
         );
       } catch (error) {
         if (this.config.throwErrors) {
@@ -436,7 +433,7 @@ export default class Veloce<TData = unknown> {
    */
   private handleSaveOperation(
     saveFn: () => void | Promise<void>,
-    force: boolean,
+    force: boolean
   ): void {
     if (force) {
       void saveFn();
@@ -447,7 +444,7 @@ export default class Veloce<TData = unknown> {
     if (this.isSaving) {
       setTimeout(
         () => this.handleSaveOperation(saveFn, force),
-        this.config.saveRetryTimeoutMs,
+        this.config.saveRetryTimeoutMs
       );
 
       return;
@@ -473,7 +470,7 @@ export default class Veloce<TData = unknown> {
 
     this.saveTimeout = setTimeout(
       () => void saveFn(),
-      this.config.autoSaveDelayMs,
+      this.config.autoSaveDelayMs
     );
   }
 
@@ -527,15 +524,12 @@ export default class Veloce<TData = unknown> {
     try {
       if (fs.existsSync(this.filePath)) {
         const newData = sjson.parse(
-          fs.readFileSync(this.filePath, { encoding: "utf-8" }),
+          fs.readFileSync(this.filePath, { encoding: "utf-8" })
         );
 
         this.data = this.config.noProxy
           ? newData
-          : (Veloce.createNestedProxies(
-              newData as object,
-              this.createProxyHandler(),
-            ) as TData);
+          : Veloce.createNestedProxies(newData, this.createProxyHandler());
       }
     } catch (error) {
       if (this.config.throwErrors) {
@@ -559,10 +553,7 @@ export default class Veloce<TData = unknown> {
 
       this.data = this.config.noProxy
         ? newData
-        : (Veloce.createNestedProxies(
-            newData as object,
-            this.createProxyHandler(),
-          ) as TData);
+        : Veloce.createNestedProxies(newData, this.createProxyHandler());
     } catch (error) {
       if (this.config.throwErrors) {
         throw error;
