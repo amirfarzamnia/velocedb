@@ -85,6 +85,18 @@ export class Veloce<TData = unknown> {
     synchronous?: boolean;
   };
 
+  /** Cache for storing proxied objects
+   *
+   * @private
+   */
+  private _proxyCache = new WeakMap<object, object>();
+
+  /** Proxy handler for reactive data operations
+   *
+   * @private
+   */
+  private _proxyHandler: ProxyHandler<any>;
+
   /** The data stored in the database, accessible for read/write operations
    *
    * @public
@@ -115,6 +127,18 @@ export class Veloce<TData = unknown> {
    */
   private _saveTimeoutCount = 0;
 
+  /** Queue for handling save operations
+   *
+   * @private
+   */
+  private _saveQueue: Promise<void> = Promise.resolve();
+
+  /** Flag to indicate if the database is closed
+   *
+   * @private
+   */
+  private _isClosed = false;
+
   /**
    * Creates nested proxies for objects within the database structure
    * to track changes at all levels of the object hierarchy.
@@ -122,13 +146,23 @@ export class Veloce<TData = unknown> {
    * @private
    * @param target - The target object to proxy
    * @param handler - The proxy handler containing trap methods
+   * @param proxyCache - The cache for storing proxied objects
    * @returns A proxied version of the target object
    */
   private static _createNestedProxies<T extends object>(
     target: T,
-    handler: ProxyHandler<T>
+    handler: ProxyHandler<T>,
+    proxyCache: WeakMap<object, object>
   ): T {
-    return new Proxy(target, handler);
+    if (proxyCache.has(target)) {
+      return proxyCache.get(target) as T;
+    }
+
+    const proxy = new Proxy(target, handler);
+
+    proxyCache.set(target, proxy);
+
+    return proxy;
   }
 
   /**
@@ -174,6 +208,8 @@ export class Veloce<TData = unknown> {
       ...configuration,
     };
 
+    this._proxyHandler = this._createProxyHandler();
+
     this.data = this._initializeData();
   }
 
@@ -192,7 +228,11 @@ export class Veloce<TData = unknown> {
 
     return this._configuration.noProxy
       ? initialData
-      : Veloce._createNestedProxies(initialData, this._createProxyHandler());
+      : Veloce._createNestedProxies(
+          initialData,
+          this._proxyHandler,
+          this._proxyCache
+        );
   }
 
   /**
@@ -209,7 +249,11 @@ export class Veloce<TData = unknown> {
         this._configuration.onUpdate?.("get", result);
 
         return result instanceof Object
-          ? Veloce._createNestedProxies(result, this._createProxyHandler())
+          ? Veloce._createNestedProxies(
+              result,
+              this._proxyHandler,
+              this._proxyCache
+            )
           : result;
       },
 
@@ -284,7 +328,11 @@ export class Veloce<TData = unknown> {
         this._triggerAutoSave();
 
         return result instanceof Object
-          ? Veloce._createNestedProxies(result, this._createProxyHandler())
+          ? Veloce._createNestedProxies(
+              result,
+              this._proxyHandler,
+              this._proxyCache
+            )
           : result;
       },
 
@@ -416,8 +464,14 @@ export class Veloce<TData = unknown> {
     saveFunction: () => void | Promise<void>,
     force: boolean
   ): void {
+    if (this._isClosed) {
+      return;
+    }
+
     if (force) {
-      void saveFunction();
+      this._saveQueue = this._saveQueue.then(async () => {
+        await saveFunction();
+      });
 
       return;
     }
@@ -432,7 +486,9 @@ export class Veloce<TData = unknown> {
     }
 
     if (!this._configuration.autoSave) {
-      void saveFunction();
+      this._saveQueue = this._saveQueue.then(async () => {
+        await saveFunction();
+      });
 
       return;
     }
@@ -445,16 +501,19 @@ export class Veloce<TData = unknown> {
       if (
         this._saveTimeoutCount >= (this._configuration.maxAutoSaveTimeouts ?? 0)
       ) {
-        void saveFunction();
+        this._saveQueue = this._saveQueue.then(async () => {
+          await saveFunction();
+        });
 
         return;
       }
     }
 
-    this._saveTimeout = setTimeout(
-      () => void saveFunction(),
-      this._configuration.autoSaveDelayMs
-    );
+    this._saveTimeout = setTimeout(() => {
+      this._saveQueue = this._saveQueue.then(async () => {
+        await saveFunction();
+      });
+    }, this._configuration.autoSaveDelayMs);
   }
 
   /**
@@ -507,7 +566,11 @@ export class Veloce<TData = unknown> {
 
       this.data = this._configuration.noProxy
         ? newData
-        : Veloce._createNestedProxies(newData, this._createProxyHandler());
+        : Veloce._createNestedProxies(
+            newData,
+            this._proxyHandler,
+            this._proxyCache
+          );
     }
   }
 
@@ -527,6 +590,34 @@ export class Veloce<TData = unknown> {
 
     this.data = this._configuration.noProxy
       ? newData
-      : Veloce._createNestedProxies(newData, this._createProxyHandler());
+      : Veloce._createNestedProxies(
+          newData,
+          this._proxyHandler,
+          this._proxyCache
+        );
+  }
+
+  /**
+   * Closes the database instance, cancelling any pending saves and cleaning up resources.
+   * After closing, no further operations will be performed.
+   *
+   * @public
+   */
+  public async close(): Promise<void> {
+    if (this._isClosed) {
+      return;
+    }
+
+    this._isClosed = true;
+
+    if (this._saveTimeout) {
+      clearTimeout(this._saveTimeout);
+
+      this._saveTimeout = undefined;
+    }
+
+    await this._saveQueue;
+
+    this._proxyCache = new WeakMap<object, object>();
   }
 }
