@@ -98,7 +98,7 @@ export class Veloce<TData = unknown> {
      * If false, asynchronous operations will be used.
      * @default false
      */
-    synchronous?: boolean;
+    useSync?: boolean;
   };
 
   /** Cache for storing proxied objects
@@ -191,7 +191,7 @@ export class Veloce<TData = unknown> {
    */
   private _triggerAutoSave(): void {
     if (this._configuration.autoSave) {
-      if (this._configuration.synchronous) {
+      if (this._configuration.useSync) {
         this.save();
       } else {
         void this.saveAsync();
@@ -223,7 +223,7 @@ export class Veloce<TData = unknown> {
       onUpdate: undefined,
       maxAutoSaveTimeouts: 10,
       fileOptions: { encoding: "utf-8" },
-      synchronous: false,
+      useSync: false,
       ...configuration,
     };
 

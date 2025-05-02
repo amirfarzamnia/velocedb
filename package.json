@@ -1,6 +1,6 @@
 {
   "name": "velocedb",
-  "version": "3.5.5",
+  "version": "4.0.0",
   "description": "High-performance, secure, and robust local database",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,7 +8,7 @@
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "prepublishOnly": "npm run build && npm test"
+    "prepublishOnly": "pnpm build"
   },
   "keywords": [
     "database",
