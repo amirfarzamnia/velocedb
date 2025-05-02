@@ -41,8 +41,7 @@ export default tseslint.config(
       environment: {
         node: true,
         es6: true,
-        jest: true,
       },
     },
-  },
+  }
 );

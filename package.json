@@ -6,8 +6,6 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "jest",
-    "test:watch": "jest --watch",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "prepublishOnly": "npm run build && npm test"
@@ -38,16 +36,13 @@
   },
   "devDependencies": {
     "@stylistic/eslint-plugin-ts": "^4.2.0",
-    "@types/jest": "^29.5.14",
     "@types/json-stringify-safe": "^5.0.3",
     "@types/node": "^22.15.3",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
     "eslint": "^9.25.1",
     "eslint-config-prettier": "^10.1.2",
-    "jest": "^29.7.0",
     "prettier": "^3.5.3",
-    "ts-jest": "^29.3.2",
     "typedoc": "^0.28.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.1"
