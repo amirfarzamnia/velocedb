@@ -6,59 +6,54 @@ import { assign, isObject } from "radash";
 
 /**
  * Veloce is a lightweight JSON database that uses proxies to simplify data manipulation.
- * It provides automatic saving, custom configurations, and flexible data handling.
+ * It provides automatic saving (both synchronous and asynchronous), custom configurations,
+ * and flexible data handling.
  *
- * @template Data The type of data stored in the database
+ * @template TData The type of data stored in the database
  */
-export default class Veloce<Data = unknown> {
+export default class Veloce<TData = unknown> {
   /** The file path where the database will be stored */
-  private filename: string;
+  private readonly filePath: string;
 
   /** Configuration options for the database */
-  private config: {
+  private readonly config: {
     /**
-     * The number of spaces for indentation when saving the file as a local file.
-     *
+     * The number of spaces for indentation when saving the file.
      * @default 2
      */
-    space?: Parameters<typeof stringify>[2];
+    indentation?: Parameters<typeof stringify>[2];
 
     /**
-     * Should data be automatically saved to the database? This feature only works in proxy mode.
-     *
+     * Whether data should be automatically saved to the database.
+     * This feature only works in proxy mode.
      * @default true
      */
     autoSave?: boolean;
 
     /**
-     * Should the database use no proxy mode? The no-proxy mode disables many features
-     * and creates a straightforward process for the databases. This mode is more optimized,
-     * but you need to save the data manually.
-     *
+     * Whether the database should use no-proxy mode.
+     * The no-proxy mode disables many features for a more streamlined process.
+     * This mode is more optimized, but requires manual data saving.
      * @default false
      */
     noProxy?: boolean;
 
     /**
-     * When automatically saving the database data, the database will wait for the given duration
-     * in milliseconds before saving the data. If the database is modified again, it will wait
-     * again until there are no more changes, then save the data.
-     *
+     * When auto-saving is enabled, the database will wait for this duration (in milliseconds)
+     * before saving the data. If modified again during this period, the timer resets.
      * @default 750
      */
-    autoSaveTimeoutMs?: number;
+    autoSaveDelayMs?: number;
 
     /**
      * The timeout in milliseconds before retrying to save the data if any issues occur.
-     *
      * @default 100
      */
-    savingRetryTimeout?: number;
+    saveRetryTimeoutMs?: number;
 
     /**
-     * The `onUpdate` function is only used in proxy mode. Whenever a new update is received
-     * for the data, this function will be triggered with the update method and result.
-     *
+     * Callback function triggered on data updates (only in proxy mode).
+     * Receives the update method name and operation result.
      * @param method - The method that was called on the proxy (e.g., 'get', 'set')
      * @param result - The result of the operation
      * @default undefined
@@ -66,59 +61,56 @@ export default class Veloce<Data = unknown> {
     onUpdate?: (method: string, result: unknown) => void;
 
     /**
-     * The database will create timeouts before saving the data (only in auto-save mode).
-     * This number indicates maximum timeouts before forcing a save operation.
-     *
+     * Maximum number of consecutive auto-save timeouts before forcing a save operation.
      * @default 10
      */
-    maximumAutoSaveTimeouts?: number;
+    maxAutoSaveTimeouts?: number;
 
     /**
-     * The options that will be used for the `node:fs` module when saving the data to the database.
-     *
-     * @default
-     * { encoding: "utf-8" }
+     * File system options used when saving data to the database file.
+     * @default { encoding: "utf-8" }
      */
     fileOptions?: WriteFileOptions;
 
     /**
-     * This object is used in proxy mode. In JavaScript, proxies require a handler to work.
-     * This object is the handler used for data proxies. Modifying this object is not recommended.
+     * Whether to use synchronous file operations by default.
+     * If false, asynchronous operations will be used.
+     * @default false
      */
-    handler: ProxyHandler<any>;
+    sync?: boolean;
 
     /**
-     * This is the data that will be put into the database during construction.
-     * If the database file exists, the data will be loaded from that file;
-     * otherwise, it will be initialized as specified (or empty object by default).
+     * Whether to throw errors when file operations fail.
+     * If false, errors will be silently caught.
+     * @default true
      */
-    target?: Data;
+    throwErrors?: boolean;
   };
 
   /** The data stored in the database, accessible for read/write operations */
-  public data: Data;
+  public data: TData;
 
   /** Flag to track if the initial directory check has been performed */
-  private initialCheckIsDone?: boolean;
+  private isInitialCheckComplete = false;
 
   /** Flag to indicate if a save operation is in progress */
-  private saving?: boolean;
+  private isSaving = false;
 
   /** Reference to the auto-save timeout */
   private saveTimeout?: NodeJS.Timeout;
 
   /** Counter for tracking consecutive auto-save timeout operations */
-  private saveTimeoutsCount?: number;
+  private saveTimeoutCount = 0;
 
   /**
    * Creates nested proxies for objects within the database structure
    * to track changes at all levels of the object hierarchy.
    *
-   * @param target - The object to wrap with a proxy
-   * @param handler - The proxy handler to use
-   * @returns The proxied object
+   * @param target - The target object to proxy
+   * @param handler - The proxy handler containing trap methods
+   * @returns A proxied version of the target object
    */
-  static createNestedProxies<T extends object>(
+  private static createNestedProxies<T extends object>(
     target: T,
     handler: ProxyHandler<T>
   ): T {
@@ -128,254 +120,415 @@ export default class Veloce<Data = unknown> {
   /**
    * Creates a new Veloce database instance.
    *
-   * @param filename - The path to the database file
+   * @param filePath - The path to the database file
    * @param config - Configuration options for the database
    */
-  constructor(filename: string, config: Partial<Veloce<Data>["config"]>) {
-    this.filename = filename;
+  constructor(filePath: string, config: Partial<Veloce<TData>["config"]> = {}) {
+    this.filePath = filePath;
 
+    // Default configuration
     this.config = {
-      space: 2,
+      indentation: 2,
       autoSave: true,
       noProxy: false,
-      autoSaveTimeoutMs: 750,
-      savingRetryTimeout: 100,
+      autoSaveDelayMs: 750,
+      saveRetryTimeoutMs: 100,
       onUpdate: undefined,
-      maximumAutoSaveTimeouts: 10,
+      maxAutoSaveTimeouts: 10,
       fileOptions: { encoding: "utf-8" },
-      handler: {
-        get: (obj: any, prop: string | symbol, receiver: any): any => {
-          const result = Reflect.get(obj, prop, receiver);
-
-          this.config.onUpdate?.("get", result);
-
-          if (isObject(result)) {
-            return Veloce.createNestedProxies(result, this.config.handler);
-          }
-
-          return result;
-        },
-        set: (
-          obj: any,
-          prop: string | symbol,
-          value: any,
-          receiver: any
-        ): boolean => {
-          const result = Reflect.set(obj, prop, value, receiver);
-
-          this.config.onUpdate?.("set", result);
-
-          if (this.config.autoSave) {
-            this.save();
-          }
-
-          return result;
-        },
-        has: (obj: any, prop: string | symbol): boolean => {
-          const result = Reflect.has(obj, prop);
-
-          this.config.onUpdate?.("has", result);
-
-          return result;
-        },
-        deleteProperty: (obj: any, prop: string | symbol): boolean => {
-          const result = Reflect.deleteProperty(obj, prop);
-
-          this.config.onUpdate?.("deleteProperty", result);
-
-          if (this.config.autoSave) {
-            this.save();
-          }
-
-          return result;
-        },
-        ownKeys: (obj: any): ArrayLike<string | symbol> => {
-          const result = Reflect.ownKeys(obj);
-
-          this.config.onUpdate?.("ownKeys", result);
-
-          return result;
-        },
-        getOwnPropertyDescriptor: (
-          obj: any,
-          prop: string | symbol
-        ): PropertyDescriptor | undefined => {
-          const result = Reflect.getOwnPropertyDescriptor(obj, prop);
-
-          this.config.onUpdate?.("getOwnPropertyDescriptor", result);
-
-          return result;
-        },
-        defineProperty: (
-          obj: any,
-          prop: string | symbol,
-          descriptor: PropertyDescriptor
-        ): boolean => {
-          const result = Reflect.defineProperty(obj, prop, descriptor);
-
-          this.config.onUpdate?.("defineProperty", result);
-
-          if (this.config.autoSave) {
-            this.save();
-          }
-
-          return result;
-        },
-        preventExtensions: (obj: any): boolean => {
-          const result = Reflect.preventExtensions(obj);
-
-          this.config.onUpdate?.("preventExtensions", result);
-
-          return result;
-        },
-        isExtensible: (obj: any): boolean => {
-          const result = Reflect.isExtensible(obj);
-
-          this.config.onUpdate?.("isExtensible", result);
-
-          return result;
-        },
-        getPrototypeOf: (obj: any): object | null => {
-          const result = Reflect.getPrototypeOf(obj);
-
-          this.config.onUpdate?.("getPrototypeOf", result);
-
-          return result;
-        },
-        setPrototypeOf: (obj: any, proto: object | null): boolean => {
-          const result = Reflect.setPrototypeOf(obj, proto);
-
-          this.config.onUpdate?.("setPrototypeOf", result);
-
-          if (this.config.autoSave) {
-            this.save();
-          }
-
-          return result;
-        },
-        apply: (target: any, thisArg: any, argumentsList: any[]): any => {
-          const result = Reflect.apply(target, thisArg, argumentsList);
-
-          this.config.onUpdate?.("apply", result);
-
-          if (this.config.autoSave) {
-            this.save();
-          }
-
-          if (isObject(result)) {
-            return Veloce.createNestedProxies(result, this.config.handler);
-          }
-
-          return result;
-        },
-        construct: (
-          target: any,
-          argumentsList: any[],
-          newTarget: any
-        ): object => {
-          const result = Reflect.construct(target, argumentsList, newTarget);
-
-          this.config.onUpdate?.("construct", result);
-
-          if (this.config.autoSave) {
-            this.save();
-          }
-
-          if (isObject(result)) {
-            return Veloce.createNestedProxies(result, this.config.handler);
-          }
-
-          return result as object;
-        },
-      },
-      target: {} as unknown as Data,
+      sync: false,
+      throwErrors: true,
     };
 
-    this.config.target = fs.existsSync(filename)
-      ? sjson(fs.readFileSync(filename, { encoding: "utf-8" }))
-      : ({} as unknown as Data);
-
+    // Merge user configuration with defaults
     assign(this.config, config);
 
-    this.data = this.config.noProxy
-      ? (this.config.target as Data)
-      : (Veloce.createNestedProxies(
-          this.config.target as object,
-          this.config.handler
-        ) as Data);
+    // Initialize data
+    this.data = this.initializeData();
   }
 
   /**
-   * Saves the current state of the database to the file.
+   * Initializes the database data, either from an existing file or with default values.
    *
-   * @param force - If true, bypasses all checks and immediately saves the data
+   * @returns The initialized data
    */
-  save(force?: boolean): void {
-    const save = (): void => {
-      const dir = path.dirname(this.filename);
+  private initializeData(): TData {
+    try {
+      const fileExists = fs.existsSync(this.filePath);
 
-      if (!this.initialCheckIsDone) {
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
+      const initialData = fileExists
+        ? sjson.parse(fs.readFileSync(this.filePath, { encoding: "utf-8" }))
+        : ({} as TData);
+
+      return this.config.noProxy
+        ? initialData
+        : (Veloce.createNestedProxies(
+            initialData as object,
+            this.createProxyHandler()
+          ) as TData);
+    } catch (error) {
+      if (this.config.throwErrors) {
+        throw error;
+      }
+      return {} as TData;
+    }
+  }
+
+  /**
+   * Creates the proxy handler for reactive data operations.
+   *
+   * @returns A proxy handler object with trap methods
+   */
+  private createProxyHandler(): ProxyHandler<any> {
+    return {
+      get: (target: any, property: string | symbol, receiver: any): any => {
+        const result = Reflect.get(target, property, receiver);
+        this.config.onUpdate?.("get", result);
+
+        return isObject(result)
+          ? Veloce.createNestedProxies(result, this.createProxyHandler())
+          : result;
+      },
+
+      set: (
+        target: any,
+        property: string | symbol,
+        value: any,
+        receiver: any
+      ): boolean => {
+        const result = Reflect.set(target, property, value, receiver);
+        this.config.onUpdate?.("set", result);
+
+        if (this.config.autoSave) {
+          if (this.config.sync) {
+            this.save();
+          } else {
+            void this.saveAsync();
+          }
         }
 
-        this.initialCheckIsDone = true;
+        return result;
+      },
+
+      deleteProperty: (target: any, property: string | symbol): boolean => {
+        const result = Reflect.deleteProperty(target, property);
+        this.config.onUpdate?.("deleteProperty", result);
+
+        if (this.config.autoSave) {
+          if (this.config.sync) {
+            this.save();
+          } else {
+            void this.saveAsync();
+          }
+        }
+
+        return result;
+      },
+
+      defineProperty: (
+        target: any,
+        property: string | symbol,
+        descriptor: PropertyDescriptor
+      ): boolean => {
+        const result = Reflect.defineProperty(target, property, descriptor);
+        this.config.onUpdate?.("defineProperty", result);
+
+        if (this.config.autoSave) {
+          if (this.config.sync) {
+            this.save();
+          } else {
+            void this.saveAsync();
+          }
+        }
+
+        return result;
+      },
+
+      setPrototypeOf: (target: any, prototype: object | null): boolean => {
+        const result = Reflect.setPrototypeOf(target, prototype);
+        this.config.onUpdate?.("setPrototypeOf", result);
+
+        if (this.config.autoSave) {
+          if (this.config.sync) {
+            this.save();
+          } else {
+            void this.saveAsync();
+          }
+        }
+
+        return result;
+      },
+
+      apply: (target: any, thisArg: any, argumentsList: any[]): any => {
+        const result = Reflect.apply(target, thisArg, argumentsList);
+        this.config.onUpdate?.("apply", result);
+
+        if (this.config.autoSave) {
+          if (this.config.sync) {
+            this.save();
+          } else {
+            void this.saveAsync();
+          }
+        }
+
+        return result;
+      },
+
+      construct: (
+        target: any,
+        argumentsList: any[],
+        newTarget: any
+      ): object => {
+        const result = Reflect.construct(target, argumentsList, newTarget);
+        this.config.onUpdate?.("construct", result);
+        if (this.config.autoSave) {
+          if (this.config.sync) {
+            this.save();
+          } else {
+            void this.saveAsync();
+          }
+        }
+        return isObject(result)
+          ? Veloce.createNestedProxies(result, this.createProxyHandler())
+          : (result as object);
+      },
+
+      // Simple proxy traps that don't trigger saves
+      has: (obj: any, prop: string | symbol): boolean => {
+        const result = Reflect.has(obj, prop);
+        this.config.onUpdate?.("has", result);
+        return result;
+      },
+
+      ownKeys: (obj: any): ArrayLike<string | symbol> => {
+        const result = Reflect.ownKeys(obj);
+        this.config.onUpdate?.("ownKeys", result);
+        return result;
+      },
+
+      getOwnPropertyDescriptor: (
+        obj: any,
+        prop: string | symbol
+      ): PropertyDescriptor | undefined => {
+        const result = Reflect.getOwnPropertyDescriptor(obj, prop);
+        this.config.onUpdate?.("getOwnPropertyDescriptor", result);
+        return result;
+      },
+
+      preventExtensions: (obj: any): boolean => {
+        const result = Reflect.preventExtensions(obj);
+        this.config.onUpdate?.("preventExtensions", result);
+        return result;
+      },
+
+      isExtensible: (obj: any): boolean => {
+        const result = Reflect.isExtensible(obj);
+        this.config.onUpdate?.("isExtensible", result);
+        return result;
+      },
+
+      getPrototypeOf: (obj: any): object | null => {
+        const result = Reflect.getPrototypeOf(obj);
+        this.config.onUpdate?.("getPrototypeOf", result);
+        return result;
+      },
+    };
+  }
+
+  /**
+   * Saves the current state of the database to the file synchronously.
+   * @param force - If true, bypasses all checks and immediately saves the data
+   */
+  save(force = false): void {
+    const performSave = (): void => {
+      try {
+        const dir = path.dirname(this.filePath);
+
+        if (!this.isInitialCheckComplete) {
+          if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+          }
+          this.isInitialCheckComplete = true;
+        }
+
+        this.isSaving = true;
+        fs.writeFileSync(
+          this.filePath,
+          stringify(this.data, null, this.config.indentation),
+          this.config.fileOptions
+        );
+      } catch (error) {
+        if (this.config.throwErrors) {
+          throw error;
+        }
+      } finally {
+        this.cleanupSaveState();
       }
-
-      this.saving = true;
-
-      fs.writeFileSync(
-        this.filename,
-        stringify(this.data, null, this.config.space),
-        this.config.fileOptions
-      );
-
-      delete this.saving;
-      delete this.saveTimeout;
-      delete this.saveTimeoutsCount;
     };
 
-    if (force) {
-      save();
+    this.handleSaveOperation(performSave, force);
+  }
 
+  /**
+   * Saves the current state of the database to the file asynchronously.
+   * @param force - If true, bypasses all checks and immediately saves the data
+   */
+  async saveAsync(force = false): Promise<void> {
+    const performSave = async (): Promise<void> => {
+      try {
+        const dir = path.dirname(this.filePath);
+
+        if (!this.isInitialCheckComplete) {
+          try {
+            await fs.promises.access(dir);
+          } catch {
+            await fs.promises.mkdir(dir, { recursive: true });
+          }
+          this.isInitialCheckComplete = true;
+        }
+
+        this.isSaving = true;
+        await fs.promises.writeFile(
+          this.filePath,
+          stringify(this.data, null, this.config.indentation),
+          this.config.fileOptions
+        );
+      } catch (error) {
+        if (this.config.throwErrors) {
+          throw error;
+        }
+      } finally {
+        this.cleanupSaveState();
+      }
+    };
+
+    this.handleSaveOperation(performSave, force);
+  }
+
+  /**
+   * Handles the save operation with proper timing and retry logic.
+   */
+  private handleSaveOperation(
+    saveFn: () => void | Promise<void>,
+    force: boolean
+  ): void {
+    if (force) {
+      void saveFn();
       return;
     }
 
-    if (this.saving) {
-      setTimeout(save, this.config.savingRetryTimeout);
-
+    if (this.isSaving) {
+      setTimeout(
+        () => this.handleSaveOperation(saveFn, force),
+        this.config.saveRetryTimeoutMs
+      );
       return;
     }
 
     if (!this.config.autoSave) {
-      save();
-
+      void saveFn();
       return;
     }
 
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);
+      this.saveTimeoutCount++;
 
-      this.saveTimeoutsCount = this.saveTimeoutsCount ?? 0;
-      this.saveTimeoutsCount++;
-
-      if (
-        this.saveTimeoutsCount >= (this.config.maximumAutoSaveTimeouts ?? 0)
-      ) {
-        save();
-
+      if (this.saveTimeoutCount >= (this.config.maxAutoSaveTimeouts ?? 0)) {
+        void saveFn();
         return;
       }
     }
 
-    this.saveTimeout = setTimeout(save, this.config.autoSaveTimeoutMs);
+    this.saveTimeout = setTimeout(
+      () => void saveFn(),
+      this.config.autoSaveDelayMs
+    );
   }
 
   /**
-   * Deletes the database file from the filesystem.
+   * Cleans up the save state after a save operation.
+   */
+  private cleanupSaveState(): void {
+    this.isSaving = false;
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+    this.saveTimeout = undefined;
+    this.saveTimeoutCount = 0;
+  }
+
+  /**
+   * Deletes the database file from the filesystem synchronously.
    * This operation cannot be undone.
    */
   delete(): void {
-    fs.unlinkSync(this.filename);
+    try {
+      fs.unlinkSync(this.filePath);
+    } catch (error) {
+      if (this.config.throwErrors) {
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Deletes the database file from the filesystem asynchronously.
+   * This operation cannot be undone.
+   */
+  async deleteAsync(): Promise<void> {
+    try {
+      await fs.promises.unlink(this.filePath);
+    } catch (error) {
+      if (this.config.throwErrors) {
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Reloads the data from the file synchronously.
+   */
+  reload(): void {
+    try {
+      if (fs.existsSync(this.filePath)) {
+        const newData = sjson.parse(
+          fs.readFileSync(this.filePath, { encoding: "utf-8" })
+        );
+        this.data = this.config.noProxy
+          ? newData
+          : (Veloce.createNestedProxies(
+              newData as object,
+              this.createProxyHandler()
+            ) as TData);
+      }
+    } catch (error) {
+      if (this.config.throwErrors) {
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Reloads the data from the file asynchronously.
+   */
+  async reloadAsync(): Promise<void> {
+    try {
+      await fs.promises.access(this.filePath);
+      const content = await fs.promises.readFile(this.filePath, {
+        encoding: "utf-8",
+      });
+      const newData = sjson.parse(content);
+      this.data = this.config.noProxy
+        ? newData
+        : (Veloce.createNestedProxies(
+            newData as object,
+            this.createProxyHandler()
+          ) as TData);
+    } catch (error) {
+      if (this.config.throwErrors) {
+        throw error;
+      }
+    }
   }
 }
