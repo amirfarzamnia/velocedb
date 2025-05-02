@@ -19,9 +19,9 @@ export class Veloce<TData = unknown> {
 
   /** Configuration options for the database
    *
-   * @private
+   * @public
    */
-  private readonly _configuration: {
+  public readonly configuration: {
     /**
      * The number of spaces for indentation when saving the file.
      * @default 2
@@ -190,8 +190,8 @@ export class Veloce<TData = unknown> {
    * @private
    */
   private _triggerAutoSave(): void {
-    if (this._configuration.autoSave) {
-      if (this._configuration.useSync) {
+    if (this.configuration.autoSave) {
+      if (this.configuration.useSync) {
         this.save();
       } else {
         void this.saveAsync();
@@ -210,11 +210,11 @@ export class Veloce<TData = unknown> {
   public constructor(
     filePath: string,
     baseData: TData,
-    configuration: Veloce<TData>["_configuration"] = {}
+    configuration: Veloce<TData>["configuration"] = {}
   ) {
     this._filePath = filePath;
 
-    this._configuration = {
+    this.configuration = {
       indentation: 2,
       autoSave: true,
       noProxy: false,
@@ -244,11 +244,11 @@ export class Veloce<TData = unknown> {
 
     const initialData = fileExists
       ? sjson.parse(
-          fs.readFileSync(this._filePath, this._configuration.fileOptions)
+          fs.readFileSync(this._filePath, this.configuration.fileOptions)
         )
       : baseData;
 
-    return this._configuration.noProxy
+    return this.configuration.noProxy
       ? initialData
       : Veloce._createNestedProxies(
           initialData,
@@ -268,7 +268,7 @@ export class Veloce<TData = unknown> {
       get: (target: any, property: string | symbol, receiver: any): any => {
         const result = Reflect.get(target, property, receiver);
 
-        this._configuration.onUpdate?.("get", result);
+        this.configuration.onUpdate?.("get", result);
 
         return result instanceof Object
           ? Veloce._createNestedProxies(
@@ -286,7 +286,7 @@ export class Veloce<TData = unknown> {
       ): boolean => {
         const result = Reflect.set(target, property, value, receiver);
 
-        this._configuration.onUpdate?.("set", result);
+        this.configuration.onUpdate?.("set", result);
 
         this._triggerAutoSave();
 
@@ -295,7 +295,7 @@ export class Veloce<TData = unknown> {
       deleteProperty: (target: any, property: string | symbol): boolean => {
         const result = Reflect.deleteProperty(target, property);
 
-        this._configuration.onUpdate?.("deleteProperty", result);
+        this.configuration.onUpdate?.("deleteProperty", result);
 
         this._triggerAutoSave();
 
@@ -308,7 +308,7 @@ export class Veloce<TData = unknown> {
       ): boolean => {
         const result = Reflect.defineProperty(target, property, descriptor);
 
-        this._configuration.onUpdate?.("defineProperty", result);
+        this.configuration.onUpdate?.("defineProperty", result);
 
         this._triggerAutoSave();
 
@@ -317,7 +317,7 @@ export class Veloce<TData = unknown> {
       setPrototypeOf: (target: any, prototype: object | null): boolean => {
         const result = Reflect.setPrototypeOf(target, prototype);
 
-        this._configuration.onUpdate?.("setPrototypeOf", result);
+        this.configuration.onUpdate?.("setPrototypeOf", result);
 
         this._triggerAutoSave();
 
@@ -326,7 +326,7 @@ export class Veloce<TData = unknown> {
       apply: (target: any, thisArg: any, argumentsList: any[]): any => {
         const result = Reflect.apply(target, thisArg, argumentsList);
 
-        this._configuration.onUpdate?.("apply", result);
+        this.configuration.onUpdate?.("apply", result);
 
         this._triggerAutoSave();
 
@@ -335,7 +335,7 @@ export class Veloce<TData = unknown> {
       construct: (target: any, argumentsList: any[], newTarget: any): any => {
         const result = Reflect.construct(target, argumentsList, newTarget);
 
-        this._configuration.onUpdate?.("construct", result);
+        this.configuration.onUpdate?.("construct", result);
 
         this._triggerAutoSave();
 
@@ -350,14 +350,14 @@ export class Veloce<TData = unknown> {
       has: (obj: any, prop: string | symbol): boolean => {
         const result = Reflect.has(obj, prop);
 
-        this._configuration.onUpdate?.("has", result);
+        this.configuration.onUpdate?.("has", result);
 
         return result;
       },
       ownKeys: (obj: any): ArrayLike<string | symbol> => {
         const result = Reflect.ownKeys(obj);
 
-        this._configuration.onUpdate?.("ownKeys", result);
+        this.configuration.onUpdate?.("ownKeys", result);
 
         return result;
       },
@@ -367,28 +367,28 @@ export class Veloce<TData = unknown> {
       ): PropertyDescriptor | undefined => {
         const result = Reflect.getOwnPropertyDescriptor(obj, prop);
 
-        this._configuration.onUpdate?.("getOwnPropertyDescriptor", result);
+        this.configuration.onUpdate?.("getOwnPropertyDescriptor", result);
 
         return result;
       },
       preventExtensions: (obj: any): boolean => {
         const result = Reflect.preventExtensions(obj);
 
-        this._configuration.onUpdate?.("preventExtensions", result);
+        this.configuration.onUpdate?.("preventExtensions", result);
 
         return result;
       },
       isExtensible: (obj: any): boolean => {
         const result = Reflect.isExtensible(obj);
 
-        this._configuration.onUpdate?.("isExtensible", result);
+        this.configuration.onUpdate?.("isExtensible", result);
 
         return result;
       },
       getPrototypeOf: (obj: any): object | null => {
         const result = Reflect.getPrototypeOf(obj);
 
-        this._configuration.onUpdate?.("getPrototypeOf", result);
+        this.configuration.onUpdate?.("getPrototypeOf", result);
 
         return result;
       },
@@ -417,8 +417,8 @@ export class Veloce<TData = unknown> {
 
       fs.writeFileSync(
         this._filePath,
-        stringify(this.data, null, this._configuration.indentation),
-        this._configuration.fileOptions
+        stringify(this.data, null, this.configuration.indentation),
+        this.configuration.fileOptions
       );
 
       this._cleanupSaveState();
@@ -451,8 +451,8 @@ export class Veloce<TData = unknown> {
 
       await fs.promises.writeFile(
         this._filePath,
-        stringify(this.data, null, this._configuration.indentation),
-        this._configuration.fileOptions
+        stringify(this.data, null, this.configuration.indentation),
+        this.configuration.fileOptions
       );
 
       this._cleanupSaveState();
@@ -485,13 +485,13 @@ export class Veloce<TData = unknown> {
     if (this._isSaving) {
       setTimeout(
         () => this._handleSaveOperation(saveFunction, force),
-        this._configuration.saveRetryTimeoutMs
+        this.configuration.saveRetryTimeoutMs
       );
 
       return;
     }
 
-    if (!this._configuration.autoSave) {
+    if (!this.configuration.autoSave) {
       this._saveQueue = this._saveQueue.then(async () => {
         await saveFunction();
       });
@@ -505,7 +505,7 @@ export class Veloce<TData = unknown> {
       this._saveTimeoutCount++;
 
       if (
-        this._saveTimeoutCount >= (this._configuration.maxAutoSaveTimeouts ?? 0)
+        this._saveTimeoutCount >= (this.configuration.maxAutoSaveTimeouts ?? 0)
       ) {
         this._saveQueue = this._saveQueue.then(async () => {
           await saveFunction();
@@ -519,7 +519,7 @@ export class Veloce<TData = unknown> {
       this._saveQueue = this._saveQueue.then(async () => {
         await saveFunction();
       });
-    }, this._configuration.autoSaveDelayMs);
+    }, this.configuration.autoSaveDelayMs);
   }
 
   /**
@@ -570,7 +570,7 @@ export class Veloce<TData = unknown> {
         fs.readFileSync(this._filePath, { encoding: "utf-8" })
       );
 
-      this.data = this._configuration.noProxy
+      this.data = this.configuration.noProxy
         ? newData
         : Veloce._createNestedProxies(
             newData,
@@ -594,7 +594,7 @@ export class Veloce<TData = unknown> {
 
     const newData = sjson.parse(content);
 
-    this.data = this._configuration.noProxy
+    this.data = this.configuration.noProxy
       ? newData
       : Veloce._createNestedProxies(
           newData,
