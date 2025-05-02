@@ -316,11 +316,7 @@ export class Veloce<TData = unknown> {
         return result;
       },
 
-      construct: (
-        target: any,
-        argumentsList: any[],
-        newTarget: any
-      ): object => {
+      construct: (target: any, argumentsList: any[], newTarget: any): any => {
         const result = Reflect.construct(target, argumentsList, newTarget);
 
         this._configuration.onUpdate?.("construct", result);
