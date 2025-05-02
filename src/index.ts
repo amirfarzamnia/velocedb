@@ -6,9 +6,6 @@ export interface VeloceConfig {
   /** The number of spaces for indentation when saving the file as a local file. Default is 2. */
   space?: number | null;
 
-  /** Should the database run in debug mode? In debug mode, it will create logs of all processes and changes. Default is false. */
-  debug?: boolean;
-
   /** Should data be automatically saved to the database? This feature only works in proxy mode. Default is true. */
   autoSave?: boolean;
 
@@ -39,11 +36,17 @@ export interface VeloceConfig {
 
 export default class Veloce {
   private filename: string;
+
   private config: Required<VeloceConfig>;
-  data: any;
+
+  public data: any;
+
   private initialCheckIsDone?: boolean;
+
   private saving?: boolean;
+
   private saveTimeout?: NodeJS.Timeout;
+
   private saveTimeoutsCount?: number;
 
   static createNestedProxies(target: any, handler: ProxyHandler<any>): any {
@@ -53,10 +56,8 @@ export default class Veloce {
   constructor(filename: string, config: Partial<VeloceConfig> = {}) {
     this.filename = filename;
 
-    // Initialize with default configuration
     this.config = {
       space: 2,
-      debug: false,
       autoSave: true,
       noProxy: false,
       autoSaveTimeoutMs: 750,
@@ -66,14 +67,13 @@ export default class Veloce {
       fileOptions: { encoding: "utf-8" },
       handler: {
         get: (obj: any, prop: string | symbol, receiver: any): any => {
-          if (this.config.debug) console.log("Getting property:", prop);
-
           const result = Reflect.get(obj, prop, receiver);
 
           this.config.onUpdate?.("get", result);
 
-          if (typeof result === "object" && result !== null)
+          if (typeof result === "object" && result !== null) {
             return Veloce.createNestedProxies(result, this.config.handler);
+          }
 
           return result;
         },
@@ -83,21 +83,17 @@ export default class Veloce {
           value: any,
           receiver: any
         ): boolean => {
-          if (this.config.debug)
-            console.log("Property", prop, "has been set:", value);
-
           const result = Reflect.set(obj, prop, value, receiver);
 
           this.config.onUpdate?.("set", result);
 
-          if (this.config.autoSave) this.save();
+          if (this.config.autoSave) {
+            this.save();
+          }
 
           return result;
         },
         has: (obj: any, prop: string | symbol): boolean => {
-          if (this.config.debug)
-            console.log("Checking existence of property:", prop);
-
           const result = Reflect.has(obj, prop);
 
           this.config.onUpdate?.("has", result);
@@ -105,19 +101,17 @@ export default class Veloce {
           return result;
         },
         deleteProperty: (obj: any, prop: string | symbol): boolean => {
-          if (this.config.debug) console.log("Deleted", prop, "property.");
-
           const result = Reflect.deleteProperty(obj, prop);
 
           this.config.onUpdate?.("deleteProperty", result);
 
-          if (this.config.autoSave) this.save();
+          if (this.config.autoSave) {
+            this.save();
+          }
 
           return result;
         },
         ownKeys: (obj: any): ArrayLike<string | symbol> => {
-          if (this.config.debug) console.log("Getting own property keys.");
-
           const result = Reflect.ownKeys(obj);
 
           this.config.onUpdate?.("ownKeys", result);
@@ -128,9 +122,6 @@ export default class Veloce {
           obj: any,
           prop: string | symbol
         ): PropertyDescriptor | undefined => {
-          if (this.config.debug)
-            console.log("Getting descriptor for property:", prop);
-
           const result = Reflect.getOwnPropertyDescriptor(obj, prop);
 
           this.config.onUpdate?.("getOwnPropertyDescriptor", result);
@@ -142,20 +133,17 @@ export default class Veloce {
           prop: string | symbol,
           descriptor: PropertyDescriptor
         ): boolean => {
-          if (this.config.debug) console.log("Defining property:", prop);
-
           const result = Reflect.defineProperty(obj, prop, descriptor);
 
           this.config.onUpdate?.("defineProperty", result);
 
-          if (this.config.autoSave) this.save();
+          if (this.config.autoSave) {
+            this.save();
+          }
 
           return result;
         },
         preventExtensions: (obj: any): boolean => {
-          if (this.config.debug)
-            console.log("Preventing extensions on object.");
-
           const result = Reflect.preventExtensions(obj);
 
           this.config.onUpdate?.("preventExtensions", result);
@@ -163,9 +151,6 @@ export default class Veloce {
           return result;
         },
         isExtensible: (obj: any): boolean => {
-          if (this.config.debug)
-            console.log("Checking if object is extensible.");
-
           const result = Reflect.isExtensible(obj);
 
           this.config.onUpdate?.("isExtensible", result);
@@ -173,8 +158,6 @@ export default class Veloce {
           return result;
         },
         getPrototypeOf: (obj: any): object | null => {
-          if (this.config.debug) console.log("Getting prototype of object.");
-
           const result = Reflect.getPrototypeOf(obj);
 
           this.config.onUpdate?.("getPrototypeOf", result);
@@ -182,27 +165,28 @@ export default class Veloce {
           return result;
         },
         setPrototypeOf: (obj: any, proto: object | null): boolean => {
-          if (this.config.debug) console.log("Setting prototype of object.");
-
           const result = Reflect.setPrototypeOf(obj, proto);
 
           this.config.onUpdate?.("setPrototypeOf", result);
 
-          if (this.config.autoSave) this.save();
+          if (this.config.autoSave) {
+            this.save();
+          }
 
           return result;
         },
         apply: (target: any, thisArg: any, argumentsList: any[]): any => {
-          if (this.config.debug) console.log("Applying function.");
-
           const result = Reflect.apply(target, thisArg, argumentsList);
 
           this.config.onUpdate?.("apply", result);
 
-          if (this.config.autoSave) this.save();
+          if (this.config.autoSave) {
+            this.save();
+          }
 
-          if (typeof result === "object" && result !== null)
+          if (typeof result === "object" && result !== null) {
             return Veloce.createNestedProxies(result, this.config.handler);
+          }
 
           return result;
         },
@@ -211,16 +195,17 @@ export default class Veloce {
           argumentsList: any[],
           newTarget: Function
         ): object => {
-          if (this.config.debug) console.log("Constructing instance.");
-
           const result = Reflect.construct(target, argumentsList, newTarget);
 
           this.config.onUpdate?.("construct", result);
 
-          if (this.config.autoSave) this.save();
+          if (this.config.autoSave) {
+            this.save();
+          }
 
-          if (typeof result === "object" && result !== null)
+          if (typeof result === "object" && result !== null) {
             return Veloce.createNestedProxies(result, this.config.handler);
+          }
 
           return result;
         },
@@ -228,7 +213,6 @@ export default class Veloce {
       target: {},
     };
 
-    // Override default configuration with provided config
     this.config.target = fs.existsSync(filename)
       ? JSON.parse(fs.readFileSync(filename, { encoding: "utf-8" }))
       : {};
@@ -237,8 +221,6 @@ export default class Veloce {
     this.data = this.config.noProxy
       ? this.config.target
       : Veloce.createNestedProxies(this.config.target, this.config.handler);
-
-    if (this.config.debug) console.log("The database has been constructed.");
   }
 
   save(force?: boolean): void {
@@ -246,9 +228,9 @@ export default class Veloce {
       const dir = path.dirname(this.filename);
 
       if (!this.initialCheckIsDone) {
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-        if (this.config.debug) console.log("The initial check is done.");
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
 
         this.initialCheckIsDone = true;
       }
@@ -261,18 +243,28 @@ export default class Veloce {
         this.config.fileOptions
       );
 
-      if (this.config.debug) console.log("The data has been saved.");
-
       delete this.saving;
       delete this.saveTimeout;
       delete this.saveTimeoutsCount;
     };
 
-    if (force) return save();
+    if (force) {
+      save();
 
-    if (this.saving) return setTimeout(save, this.config.savingRetryTimeout);
+      return;
+    }
 
-    if (!this.config.autoSave) return save();
+    if (this.saving) {
+      setTimeout(save, this.config.savingRetryTimeout);
+
+      return;
+    }
+
+    if (!this.config.autoSave) {
+      save();
+
+      return;
+    }
 
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);
@@ -280,8 +272,11 @@ export default class Veloce {
       this.saveTimeoutsCount = this.saveTimeoutsCount || 0;
       this.saveTimeoutsCount++;
 
-      if (this.saveTimeoutsCount >= this.config.maximumAutoSaveTimeouts)
-        return save();
+      if (this.saveTimeoutsCount >= this.config.maximumAutoSaveTimeouts) {
+        save();
+
+        return;
+      }
     }
 
     this.saveTimeout = setTimeout(save, this.config.autoSaveTimeoutMs);
@@ -289,7 +284,5 @@ export default class Veloce {
 
   delete(): void {
     fs.unlinkSync(this.filename);
-
-    if (this.config.debug) console.log("The database has been deleted.");
   }
 }
