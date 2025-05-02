@@ -1,12 +1,16 @@
 {
   "name": "velocedb",
   "version": "3.5.5",
-  "description": "A high-performance, secure, and robust local database",
-  "main": "index.js",
-  "types": "index.d.ts",
-  "type": "module",
+  "description": "High-performance, secure, and robust local database",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "development": "nodemon tests/index.js"
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "database",
@@ -16,19 +20,25 @@
     "nosql",
     "opensource",
     "db",
-    "json"
+    "json",
+    "local"
   ],
-  "author": "Amir Farzamnia",
+  "author": "Amir Farzamnia <amir2452fa@gmail.com>",
   "license": "MIT",
+  "files": [
+    "dist/**/*"
+  ],
+  "homepage": "https://github.com/amirfarzamnia/velocedb",
   "bugs": {
     "url": "https://github.com/amirfarzamnia/velocedb/issues"
   },
-  "homepage": "https://github.com/amirfarzamnia/velocedb#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/amirfarzamnia/velocedb.git"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "@types/node": "^20.11.25",
+    "nodemon": "^3.1.7",
+    "typescript": "^5.4.2"
   }
 }

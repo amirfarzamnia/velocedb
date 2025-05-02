@@ -1,2 +1,8 @@
-.vscode
-tests
+src
+test
+coverage
+assets
+.*
+*.config.js
+*.md
+tsconfig.*

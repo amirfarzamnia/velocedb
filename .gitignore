@@ -1,3 +1,6 @@
 node_modules
-package-lock.json
-tests
+dist
+coverage
+*.log
+.DS_Store
+.idea
