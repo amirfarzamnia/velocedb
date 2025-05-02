@@ -37,6 +37,7 @@
     "url": "git+https://github.com/amirfarzamnia/velocedb.git"
   },
   "devDependencies": {
+    "@stylistic/eslint-plugin-ts": "^4.2.0",
     "@types/jest": "^29.5.14",
     "@types/json-stringify-safe": "^5.0.3",
     "@types/node": "^22.15.3",

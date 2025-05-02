@@ -31,9 +31,9 @@ npm install velocedb
 Here’s a basic example of how to use VeloceDB:
 
 ```javascript
-import Veloce from 'velocedb';
+import Veloce from "velocedb";
 
-const database = new Veloce('database.json');
+const database = new Veloce("database.json");
 
 database.data.number = 8;
 ```
@@ -41,12 +41,12 @@ database.data.number = 8;
 This example creates a `database.json` file and sets a `number` property to 8. The data is automatically saved to the file. You can also modify and manage your data as follows:
 
 ```javascript
-import Veloce from 'velocedb';
+import Veloce from "velocedb";
 
-const database = new Veloce('database.json');
+const database = new Veloce("database.json");
 
 database.data.number = 8;
-database.data.string = 'Hello World!';
+database.data.string = "Hello World!";
 database.data.boolean = true;
 
 delete database.data.boolean;
@@ -63,11 +63,11 @@ In Proxy Mode, VeloceDB provides advanced features such as auto-save, detailed d
 **Example:**
 
 ```javascript
-import Veloce from 'velocedb';
+import Veloce from "velocedb";
 
-const database = new Veloce('database.json');
+const database = new Veloce("database.json");
 
-database.data.string = 'Hello World!';
+database.data.string = "Hello World!";
 ```
 
 ### No Proxy Mode
@@ -77,11 +77,11 @@ No Proxy Mode is optimized for performance and direct data manipulation. It bypa
 **Example:**
 
 ```javascript
-import Veloce from 'velocedb';
+import Veloce from "velocedb";
 
-const database = new Veloce('database.json', { noProxy: true });
+const database = new Veloce("database.json", { noProxy: true });
 
-database.data = { string: 'Hello World!' };
+database.data = { string: "Hello World!" };
 
 database.save();
 ```
