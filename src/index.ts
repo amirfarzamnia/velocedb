@@ -63,7 +63,23 @@ export class Veloce<TData = unknown> {
      * @param result - The result of the operation
      * @default undefined
      */
-    onUpdate?: (method: string, result: unknown) => void;
+    onUpdate?: (
+      method:
+        | "get"
+        | "set"
+        | "deleteProperty"
+        | "defineProperty"
+        | "setPrototypeOf"
+        | "apply"
+        | "construct"
+        | "has"
+        | "ownKeys"
+        | "getOwnPropertyDescriptor"
+        | "preventExtensions"
+        | "isExtensible"
+        | "getPrototypeOf",
+      result: unknown
+    ) => void;
 
     /**
      * Maximum number of consecutive auto-save timeouts before forcing a save operation.
@@ -144,6 +160,7 @@ export class Veloce<TData = unknown> {
    * to track changes at all levels of the object hierarchy.
    *
    * @private
+   * @template T The type of the target object
    * @param target - The target object to proxy
    * @param handler - The proxy handler containing trap methods
    * @param proxyCache - The cache for storing proxied objects
@@ -187,11 +204,13 @@ export class Veloce<TData = unknown> {
    *
    * @public
    * @param filePath - The path to the database file
+   * @param baseData - The base data to use as fallback when no data exists
    * @param configuration - Configuration options for the database
    */
   public constructor(
     filePath: string,
-    configuration: Partial<Veloce<TData>["_configuration"]> = {}
+    baseData: TData,
+    configuration: Veloce<TData>["_configuration"] = {}
   ) {
     this._filePath = filePath;
 
@@ -210,21 +229,24 @@ export class Veloce<TData = unknown> {
 
     this._proxyHandler = this._createProxyHandler();
 
-    this.data = this._initializeData();
+    this.data = this._initializeData(baseData);
   }
 
   /**
-   * Initializes the database data, either from an existing file or with default values.
+   * Initializes the database data, either from an existing file or with the provided base data.
    *
    * @private
+   * @param baseData - The base data to use as fallback when no data exists
    * @returns The initialized data
    */
-  private _initializeData(): TData {
+  private _initializeData(baseData: TData): TData {
     const fileExists = fs.existsSync(this._filePath);
 
     const initialData = fileExists
-      ? sjson.parse(fs.readFileSync(this._filePath, { encoding: "utf-8" }))
-      : {};
+      ? sjson.parse(
+          fs.readFileSync(this._filePath, this._configuration.fileOptions)
+        )
+      : baseData;
 
     return this._configuration.noProxy
       ? initialData
@@ -256,7 +278,6 @@ export class Veloce<TData = unknown> {
             )
           : result;
       },
-
       set: (
         target: any,
         property: string | symbol,
@@ -271,7 +292,6 @@ export class Veloce<TData = unknown> {
 
         return result;
       },
-
       deleteProperty: (target: any, property: string | symbol): boolean => {
         const result = Reflect.deleteProperty(target, property);
 
@@ -281,7 +301,6 @@ export class Veloce<TData = unknown> {
 
         return result;
       },
-
       defineProperty: (
         target: any,
         property: string | symbol,
@@ -295,7 +314,6 @@ export class Veloce<TData = unknown> {
 
         return result;
       },
-
       setPrototypeOf: (target: any, prototype: object | null): boolean => {
         const result = Reflect.setPrototypeOf(target, prototype);
 
@@ -305,7 +323,6 @@ export class Veloce<TData = unknown> {
 
         return result;
       },
-
       apply: (target: any, thisArg: any, argumentsList: any[]): any => {
         const result = Reflect.apply(target, thisArg, argumentsList);
 
@@ -315,7 +332,6 @@ export class Veloce<TData = unknown> {
 
         return result;
       },
-
       construct: (target: any, argumentsList: any[], newTarget: any): any => {
         const result = Reflect.construct(target, argumentsList, newTarget);
 
@@ -331,7 +347,6 @@ export class Veloce<TData = unknown> {
             )
           : result;
       },
-
       has: (obj: any, prop: string | symbol): boolean => {
         const result = Reflect.has(obj, prop);
 
@@ -339,7 +354,6 @@ export class Veloce<TData = unknown> {
 
         return result;
       },
-
       ownKeys: (obj: any): ArrayLike<string | symbol> => {
         const result = Reflect.ownKeys(obj);
 
@@ -347,7 +361,6 @@ export class Veloce<TData = unknown> {
 
         return result;
       },
-
       getOwnPropertyDescriptor: (
         obj: any,
         prop: string | symbol
@@ -358,7 +371,6 @@ export class Veloce<TData = unknown> {
 
         return result;
       },
-
       preventExtensions: (obj: any): boolean => {
         const result = Reflect.preventExtensions(obj);
 
@@ -366,7 +378,6 @@ export class Veloce<TData = unknown> {
 
         return result;
       },
-
       isExtensible: (obj: any): boolean => {
         const result = Reflect.isExtensible(obj);
 
@@ -374,7 +385,6 @@ export class Veloce<TData = unknown> {
 
         return result;
       },
-
       getPrototypeOf: (obj: any): object | null => {
         const result = Reflect.getPrototypeOf(obj);
 
