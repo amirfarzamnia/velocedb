@@ -1,59 +1,137 @@
 import path from "node:path";
-import fs from "node:fs";
+import fs, { WriteFileOptions } from "node:fs";
 import sjson from "secure-json-parse";
 import stringify from "json-stringify-safe";
-import { isObject } from "radash";
+import { assign, isObject } from "radash";
 
+/**
+ * Veloce is a lightweight JSON database that uses proxies to simplify data manipulation.
+ * It provides automatic saving, custom configurations, and flexible data handling.
+ *
+ * @template Data The type of data stored in the database
+ */
 export default class Veloce<Data = unknown> {
+  /** The file path where the database will be stored */
   private filename: string;
 
+  /** Configuration options for the database */
   private config: {
-    /** The number of spaces for indentation when saving the file as a local file. Default is 2. */
-    space?: number | null;
+    /**
+     * The number of spaces for indentation when saving the file as a local file.
+     *
+     * @default 2
+     */
+    space?: Parameters<typeof stringify>[2];
 
-    /** Should data be automatically saved to the database? This feature only works in proxy mode. Default is true. */
+    /**
+     * Should data be automatically saved to the database? This feature only works in proxy mode.
+     *
+     * @default true
+     */
     autoSave?: boolean;
 
-    /** Should the database use no proxy mode? The no-proxy mode disables many features and creates a straightforward process for the databases. This mode is more optimized, but you need to save the data manually. Default is false. */
+    /**
+     * Should the database use no proxy mode? The no-proxy mode disables many features
+     * and creates a straightforward process for the databases. This mode is more optimized,
+     * but you need to save the data manually.
+     *
+     * @default false
+     */
     noProxy?: boolean;
 
-    /** When automatically saving the database data, the database will wait for the given duration in milliseconds before saving the data. If the database is modified again, it will wait again until there are no more changes, then save the data. The default value is set to 750 milliseconds (750). */
+    /**
+     * When automatically saving the database data, the database will wait for the given duration
+     * in milliseconds before saving the data. If the database is modified again, it will wait
+     * again until there are no more changes, then save the data.
+     *
+     * @default 750
+     */
     autoSaveTimeoutMs?: number;
 
-    /** The timeout in milliseconds before retrying to save the data if any issues occur. Default is 100 milliseconds (100). */
+    /**
+     * The timeout in milliseconds before retrying to save the data if any issues occur.
+     *
+     * @default 100
+     */
     savingRetryTimeout?: number;
 
-    /** The `onUpdate` function is only used in proxy mode. Whenever a new update is received for the data, this function will be triggered with the update method and result. By default, this function is undefined. */
-    onUpdate?: (method: string, result: any) => void;
+    /**
+     * The `onUpdate` function is only used in proxy mode. Whenever a new update is received
+     * for the data, this function will be triggered with the update method and result.
+     *
+     * @param method - The method that was called on the proxy (e.g., 'get', 'set')
+     * @param result - The result of the operation
+     * @default undefined
+     */
+    onUpdate?: (method: string, result: unknown) => void;
 
-    /** The database will create timeouts before saving the data (only in auto-save mode). This number indicates maximum timeouts before saving database data. Default is 10. */
+    /**
+     * The database will create timeouts before saving the data (only in auto-save mode).
+     * This number indicates maximum timeouts before forcing a save operation.
+     *
+     * @default 10
+     */
     maximumAutoSaveTimeouts?: number;
 
-    /** The options that will be used for the `node:fs` module when saving the data to the database. */
-    fileOptions?: fs.WriteFileOptions;
+    /**
+     * The options that will be used for the `node:fs` module when saving the data to the database.
+     *
+     * @default
+     * { encoding: "utf-8" }
+     */
+    fileOptions?: WriteFileOptions;
 
-    /** This object is used in proxy mode. In JavaScript, proxies require a handler to work. This object is the handler used for data proxies. Modifying this object is not suggested. */
+    /**
+     * This object is used in proxy mode. In JavaScript, proxies require a handler to work.
+     * This object is the handler used for data proxies. Modifying this object is not recommended.
+     */
     handler: ProxyHandler<any>;
 
-    /** This is the data that will be put into the database during the database construction process. If the database exists, the data will be the database's data; otherwise, the data will be an empty object. */
+    /**
+     * This is the data that will be put into the database during construction.
+     * If the database file exists, the data will be loaded from that file;
+     * otherwise, it will be initialized as specified (or empty object by default).
+     */
     target?: Data;
   };
 
+  /** The data stored in the database, accessible for read/write operations */
   public data: Data;
 
+  /** Flag to track if the initial directory check has been performed */
   private initialCheckIsDone?: boolean;
 
+  /** Flag to indicate if a save operation is in progress */
   private saving?: boolean;
 
+  /** Reference to the auto-save timeout */
   private saveTimeout?: NodeJS.Timeout;
 
+  /** Counter for tracking consecutive auto-save timeout operations */
   private saveTimeoutsCount?: number;
 
-  static createNestedProxies(target: any, handler: ProxyHandler<any>): any {
+  /**
+   * Creates nested proxies for objects within the database structure
+   * to track changes at all levels of the object hierarchy.
+   *
+   * @param target - The object to wrap with a proxy
+   * @param handler - The proxy handler to use
+   * @returns The proxied object
+   */
+  static createNestedProxies<T extends object>(
+    target: T,
+    handler: ProxyHandler<T>
+  ): T {
     return new Proxy(target, handler);
   }
 
-  constructor(filename: string, config: Veloce["config"]) {
+  /**
+   * Creates a new Veloce database instance.
+   *
+   * @param filename - The path to the database file
+   * @param config - Configuration options for the database
+   */
+  constructor(filename: string, config: Partial<Veloce<Data>["config"]>) {
     this.filename = filename;
 
     this.config = {
@@ -207,22 +285,31 @@ export default class Veloce<Data = unknown> {
             return Veloce.createNestedProxies(result, this.config.handler);
           }
 
-          return result;
+          return result as object;
         },
       },
-      target: {},
+      target: {} as unknown as Data,
     };
 
     this.config.target = fs.existsSync(filename)
       ? sjson(fs.readFileSync(filename, { encoding: "utf-8" }))
-      : {};
-    Object.assign(this.config, config);
+      : ({} as unknown as Data);
+
+    assign(this.config, config);
 
     this.data = this.config.noProxy
-      ? this.config.target
-      : Veloce.createNestedProxies(this.config.target, this.config.handler);
+      ? (this.config.target as Data)
+      : (Veloce.createNestedProxies(
+          this.config.target as object,
+          this.config.handler
+        ) as Data);
   }
 
+  /**
+   * Saves the current state of the database to the file.
+   *
+   * @param force - If true, bypasses all checks and immediately saves the data
+   */
   save(force?: boolean): void {
     const save = (): void => {
       const dir = path.dirname(this.filename);
@@ -284,6 +371,10 @@ export default class Veloce<Data = unknown> {
     this.saveTimeout = setTimeout(save, this.config.autoSaveTimeoutMs);
   }
 
+  /**
+   * Deletes the database file from the filesystem.
+   * This operation cannot be undone.
+   */
   delete(): void {
     fs.unlinkSync(this.filename);
   }
