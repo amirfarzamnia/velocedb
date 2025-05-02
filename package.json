@@ -26,7 +26,7 @@
   "files": [
     "dist/**/*"
   ],
-  "homepage": "https://github.com/amirfarzamnia/velocedb",
+  "homepage": "https://amirfarzamnia.github.io/velocedb",
   "bugs": {
     "url": "https://github.com/amirfarzamnia/velocedb/issues"
   },
