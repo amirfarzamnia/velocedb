@@ -11,10 +11,16 @@ import stringify from "json-stringify-safe";
  * @template TData The type of data stored in the database
  */
 export class Veloce<TData = unknown> {
-  /** The file path where the database will be stored */
+  /** The file path where the database will be stored
+   *
+   * @private
+   */
   private readonly _filePath: string;
 
-  /** Configuration options for the database */
+  /** Configuration options for the database
+   *
+   * @private
+   */
   private readonly _configuration: {
     /**
      * The number of spaces for indentation when saving the file.
@@ -79,19 +85,34 @@ export class Veloce<TData = unknown> {
     synchronous?: boolean;
   };
 
-  /** The data stored in the database, accessible for read/write operations */
+  /** The data stored in the database, accessible for read/write operations
+   *
+   * @public
+   */
   public data: TData;
 
-  /** Flag to track if the initial directory check has been performed */
+  /** Flag to track if the initial directory check has been performed
+   *
+   * @private
+   */
   private _isInitialCheckComplete = false;
 
-  /** Flag to indicate if a save operation is in progress */
+  /** Flag to indicate if a save operation is in progress
+   *
+   * @private
+   */
   private _isSaving = false;
 
-  /** Reference to the auto-save timeout */
+  /** Reference to the auto-save timeout
+   *
+   * @private
+   */
   private _saveTimeout?: NodeJS.Timeout;
 
-  /** Counter for tracking consecutive auto-save timeout operations */
+  /** Counter for tracking consecutive auto-save timeout operations
+   *
+   * @private
+   */
   private _saveTimeoutCount = 0;
 
   /**
@@ -130,10 +151,11 @@ export class Veloce<TData = unknown> {
   /**
    * Creates a new Veloce database instance.
    *
+   * @public
    * @param filePath - The path to the database file
    * @param configuration - Configuration options for the database
    */
-  constructor(
+  public constructor(
     filePath: string,
     configuration: Partial<Veloce<TData>["_configuration"]> = {}
   ) {
@@ -158,6 +180,7 @@ export class Veloce<TData = unknown> {
   /**
    * Initializes the database data, either from an existing file or with default values.
    *
+   * @private
    * @returns The initialized data
    */
   private _initializeData(): TData {
@@ -175,6 +198,7 @@ export class Veloce<TData = unknown> {
   /**
    * Creates the proxy handler for reactive data operations.
    *
+   * @private
    * @returns A proxy handler object with trap methods
    */
   private _createProxyHandler(): ProxyHandler<any> {
@@ -320,8 +344,10 @@ export class Veloce<TData = unknown> {
   /**
    * Saves the current state of the database to the file synchronously.
    * @param force - If true, bypasses all checks and immediately saves the data
+   *
+   * @public
    */
-  save(force = false): void {
+  public save(force = false): void {
     const performSave = (): void => {
       const dir = path.dirname(this._filePath);
 
@@ -344,14 +370,16 @@ export class Veloce<TData = unknown> {
       this._cleanupSaveState();
     };
 
-    this.handleSaveOperation(performSave, force);
+    this._handleSaveOperation(performSave, force);
   }
 
   /**
    * Saves the current state of the database to the file asynchronously.
    * @param force - If true, bypasses all checks and immediately saves the data
+   *
+   * @public
    */
-  async saveAsync(force = false): Promise<void> {
+  public async saveAsync(force = false): Promise<void> {
     const performSave = async (): Promise<void> => {
       const dir = path.dirname(this._filePath);
 
@@ -376,13 +404,15 @@ export class Veloce<TData = unknown> {
       this._cleanupSaveState();
     };
 
-    this.handleSaveOperation(performSave, force);
+    this._handleSaveOperation(performSave, force);
   }
 
   /**
    * Handles the save operation with proper timing and retry logic.
+   *
+   * @private
    */
-  private handleSaveOperation(
+  private _handleSaveOperation(
     saveFunction: () => void | Promise<void>,
     force: boolean
   ): void {
@@ -394,7 +424,7 @@ export class Veloce<TData = unknown> {
 
     if (this._isSaving) {
       setTimeout(
-        () => this.handleSaveOperation(saveFunction, force),
+        () => this._handleSaveOperation(saveFunction, force),
         this._configuration.saveRetryTimeoutMs
       );
 
@@ -429,6 +459,8 @@ export class Veloce<TData = unknown> {
 
   /**
    * Cleans up the save state after a save operation.
+   *
+   * @private
    */
   private _cleanupSaveState(): void {
     this._isSaving = false;
@@ -445,23 +477,29 @@ export class Veloce<TData = unknown> {
   /**
    * Deletes the database file from the filesystem synchronously.
    * This operation cannot be undone.
+   *
+   * @public
    */
-  delete(): void {
+  public delete(): void {
     fs.unlinkSync(this._filePath);
   }
 
   /**
    * Deletes the database file from the filesystem asynchronously.
    * This operation cannot be undone.
+   *
+   * @public
    */
-  async deleteAsync(): Promise<void> {
+  public async deleteAsync(): Promise<void> {
     await fs.promises.unlink(this._filePath);
   }
 
   /**
    * Reloads the data from the file synchronously.
+   *
+   * @public
    */
-  reload(): void {
+  public reload(): void {
     if (fs.existsSync(this._filePath)) {
       const newData = sjson.parse(
         fs.readFileSync(this._filePath, { encoding: "utf-8" })
@@ -475,8 +513,10 @@ export class Veloce<TData = unknown> {
 
   /**
    * Reloads the data from the file asynchronously.
+   *
+   * @public
    */
-  async reloadAsync(): Promise<void> {
+  public async reloadAsync(): Promise<void> {
     await fs.promises.access(this._filePath);
 
     const content = await fs.promises.readFile(this._filePath, {
