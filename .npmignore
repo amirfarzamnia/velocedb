@@ -4,3 +4,4 @@ assets
 *.config.*
 *.md
 tsconfig.*
+docs
