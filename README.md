@@ -182,7 +182,7 @@ interface VeloceConfig {
 
 ### Hot Reloading
 
-You canmplement functionalities like reload on file change::
+You can mplement functionalities like reload on file change::
 
 ```typescript
 import { Veloce } from "velocedb";
@@ -318,3 +318,4 @@ For support, please:
 1. Check the [documentation](https://github.com/amirfarzamnia/velocedb)
 2. Search existing issues
 3. Create a new issue if needed
+
