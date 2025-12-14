@@ -21,7 +21,7 @@
     "json",
     "local"
   ],
-  "author": "Amir Farzamnia <amir2452fa@gmail.com>",
+  "author": "Amir Farzamnia <amirfarzamnia@proton.me>",
   "license": "MIT",
   "files": [
     "dist/**/*"
