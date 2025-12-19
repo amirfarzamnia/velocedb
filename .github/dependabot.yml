@@ -5,9 +5,9 @@ updates:
     schedule:
       interval: "monthly"
     groups:
-          npm-dependencies:
-            patterns:
-              - "*"
+      npm-dependencies:
+        patterns:
+          - "*"
     commit-message:
       prefix: "chore"
       include: "scope"
